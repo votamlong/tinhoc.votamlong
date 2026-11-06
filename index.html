@@ -327,7 +327,11 @@ att(){C(`<div class="${card}"><div class="d-flex flex-wrap gap-2 align-items-cen
 classmgr(){C(`${sel('mc',clsOpts(),'listMgr()')}<div class="card table-responsive mt-2"><table class="table table-sm align-middle mb-0"><thead class="table-light"><tr><th>Học sinh</th><th>Học lực</th><th>Hạnh kiểm</th></tr></thead><tbody id="ml"></tbody></table></div>`)},
 batch(){C(`<div class="${card}"><p class="small">Dán mỗi dòng: <code>Mã,Họ tên,Lớp</code> (từ Excel: copy 3 cột rồi dán, hệ thống tự nhận Tab).</p><textarea id="bulk" class="form-control" rows="10"></textarea><button class="btn btn-success mt-2" onclick="bulk()">NHẬP DANH SÁCH</button></div>`)},
 grid(){const t=today();C(`<div class="${card}"><div class="d-flex flex-wrap gap-2">${sel('gg','<option value="">Toàn trường</option>'+[6,7,8,9].map(k=>`<option value="${k}">Khối ${k}</option>`).join(''))}<input type="date" id="gs" class="form-control form-control-sm w-auto" value="${t}"><input type="date" id="ge" class="form-control form-control-sm w-auto" value="${t}"><button class="btn btn-primary btn-sm px-4" onclick="drawGrid()">LỌC</button></div></div><div class="gs"><table class="table table-bordered table-sm text-center mb-0" id="gt"></table></div><small class="text-muted">Điểm thi đua = 100 − tổng điểm trừ (theo danh mục lỗi).</small>`)},
-cvm(){const t=today();C(`<div class="${card}"><div class="d-flex flex-wrap gap-2">${sel('vc',clsOpts())}<input type="date" id="vs" class="form-control form-control-sm w-auto" value="${t}"><input type="date" id="ve" class="form-control form-control-sm w-auto" value="${t}"><button class="btn btn-danger btn-sm px-4" onclick="drawCvm()">XEM</button></div></div><div class="gs"><table class="table table-bordered table-sm text-center mb-0" id="vt"></table></div>`)},
+cvm(){
+  const c=$('vc').value, s=$('vs').value, e=$('ve').value, L=D('loi');
+  if(!c) return alert('Chọn lớp!');
+  $('vt').innerHTML=`<thead><tr><th>HỌC SINH</th>${L.map(x=>`<th title="${esc(x.name)}">${esc(x.code)}</th>`).join('')}<th>ĐIỂM TRỪ</th></tr></thead><tbody>${stOf(c).map(st=>{let p=0;const cells=L.map(x=>{const n=D('discipline').filter(d=>d.id==st.id&&d.type==x.name&&inR(d,s,e)).length;p+=n*x.pts;return`<td>${n||''}</td>`}).join('');return`<tr><td class="fw-bold">${esc(st.name)}</td>${cells}<td class="text-danger fw-bold">${p}</td></tr>`}).join('')}</tbody>`;
+},
 attstat(){const t=today();C(`<div class="${card}"><div class="d-flex flex-wrap gap-2"><input type="date" id="as" class="form-control form-control-sm w-auto" value="${t}"><input type="date" id="ae" class="form-control form-control-sm w-auto" value="${t}"><button class="btn btn-primary btn-sm px-4" onclick="drawAttStat()">LỌC</button></div></div>
  <div class="card table-responsive"><table class="table table-bordered table-sm text-center align-middle mb-0"><thead class="table-light"><tr><th>LỚP</th><th>GVCN</th><th>SĨ SỐ</th><th>VẮNG</th><th>TRỄ</th><th>HIỆN DIỆN</th><th>BÁN TRÚ</th><th class="text-start">Danh sách vắng</th></tr></thead><tbody id="ab"></tbody></table></div>`);drawAttStat()},
 lunch(){const bt=D('students').filter(s=>s.bt=='X'),ab=new Set(D('attendance').filter(a=>a.date.slice(0,10)==today()&&a.status=='V').map(a=>a.id)),v=bt.filter(s=>ab.has(s.id)).length;
@@ -417,11 +421,6 @@ function drawGrid(){
   const s=$('gs').value,e=$('ge').value,g=$('gg').value,L=D('loi');
   const R=classes().filter(c=>!g||c.startsWith(g)).map(l=>{let p=100;const cells=L.map(x=>{const n=D('discipline').filter(d=>d.lop==l&&d.type==x.name&&inR(d,s,e)).length;p-=n*x.pts;return`<td>${n||''}</td>`}).join('');return{p,h:`<tr><td class="fw-bold">${esc(l)}</td><td>${esc(gvOf(l))}</td>${cells}<td class="fw-bold text-danger">${p}</td></tr>`}}).sort((a,b)=>b.p-a.p);
   $('gt').innerHTML=`<thead><tr><th>LỚP</th><th>GVCN</th>${L.map(x=>`<th title="${esc(x.name)} (-${x.pts})">${esc(x.code)}</th>`).join('')}<th>ĐIỂM</th></tr></thead><tbody>${R.map(r=>r.h).join('')}</tbody>`;
-}
-
-function drawCvm(){
-  const c=$('vc').value,s=$('vs').value,e=$('ve').value,L=D('loi');if(!c)return alert('Chọn lớp!');
-  $('vt').innerHTML=`<thead><tr><th>HỌC SINH</th>${L.map(x=>`<th title="${esc(x.name)}">${esc(x.code)}</th>`).join('')}<th>ĐIỂM TRỪ</th></tr></thead><tbody>${stOf(c).map(st=>{let p=0;const cells=L.map(x=> ancient=d=>d.id==st.id&&d.type==x.name&&inR(d,s,e),n=D('discipline').filter(ancient).length;p+=n*x.pts;return`<td>${n||''}</td>`}).join('');return`<tr><td class="fw-bold">${esc(st.name)}</td>${cells}<td class="text-danger fw-bold">${p}</td></tr>`}).join('')}</tbody>`;
 }
 
 function drawAttStat(){
