@@ -146,6 +146,7 @@ notifications|Thông báo|bell|C|crud:notif
 global_violations_today|Vi phạm toàn trường|exclamation-triangle|C|rep:today
 violation_summary_today|Nề nếp tổng hợp ngày|list-ol|C|rep:sum
 violation_search_adv|Tra cứu vi phạm theo HS|search-plus|C|rep:all
+quiz_gemini|Soạn đề trắc nghiệm AI|robot|G|quiz
 my_profile|Hồ sơ học tập|user-graduate|S|profile
 class_fund|Quỹ Lớp|wallet|M|crud:fund`.split('\n').map(l=>{const[id,t,i,a,h]=l.split('|');return{id,t,i,a,h}});
 const ROLES={HS:'dashboard,homework_portal_2627,my_profile,sll_2627,timetable_2627,class_fund,notifications',
@@ -327,6 +328,38 @@ function wdraw(){const ok=[...WW].every(c=>c==' '||WG.includes(c));$('wd').inner
 function wguess(k){WG.push(k);if(!WW.includes(k))WL--;wdraw()}
 function drawProfile(){const s=D('students').find(x=>x.id==$('pid').value);if(!s)return $('pf').innerHTML='<div class="text-danger">Không thấy mã HS</div>';
  $('pf').innerHTML=`<div class="${card} bg-primary text-white"><h4>${esc(s.name)}</h4>Lớp ${esc(s.lop)} | ID ${esc(s.id)} | Học lực ${esc(s.hl)} | Hạnh kiểm ${esc(s.hk)}</div><div class="row g-3"><div class="col-md-6"><div class="${card}"><b>Điểm</b><table class="table table-sm mb-0">${D('scores').filter(x=>x.id==s.id).map(x=>`<tr><td>${esc(x.mon)}</td><td>${COMP.scores[1](x)}</td></tr>`).join('')}</table></div></div><div class="col-md-6"><div class="${card}"><b>Vi phạm</b>${D('discipline').filter(x=>x.id==s.id).map(x=>`<div class="small border-bottom py-1">${dtxt(x.date)} - ${esc(x.type)}</div>`).join('')}</div></div></div>`}
+/* ===== SOẠN ĐỀ TRẮC NGHIỆM BẰNG GEMINI (gọi qua Worker /api/ai) ===== */
+let QZ=[];
+VIEWS.quiz=function(){C(`<div class="${card}"><h6 class="fw-bold text-primary">🤖 Soạn đề trắc nghiệm bằng AI (Gemini)</h6><div class="row g-2">
+ <div class="col-md-3 col-6"><label class="small fw-bold">Môn</label><select id="qm" class="form-select form-select-sm">${D('mon').map(m=>`<option>${esc(m.name)}</option>`).join('')}</select></div>
+ <div class="col-md-2 col-6"><label class="small fw-bold">Khối/Lớp</label><input id="qk" class="form-control form-control-sm" value="9"></div>
+ <div class="col-md-4"><label class="small fw-bold">Chủ đề / Bài học</label><input id="qt" class="form-control form-control-sm" placeholder="VD: Hàm số bậc nhất"></div>
+ <div class="col-md-1 col-6"><label class="small fw-bold">Số câu</label><input id="qn" type="number" value="10" min="1" max="40" class="form-control form-control-sm"></div>
+ <div class="col-md-2 col-6"><label class="small fw-bold">Mức độ</label><select id="ql" class="form-select form-select-sm"><option>Hỗn hợp</option><option>Nhận biết</option><option>Thông hiểu</option><option>Vận dụng</option><option>Vận dụng cao</option></select></div>
+ <div class="col-12"><label class="small fw-bold">Yêu cầu thêm (tùy chọn)</label><input id="qx" class="form-control form-control-sm" placeholder="VD: bám sát SGK Kết nối tri thức, có câu tính toán..."></div>
+ <div class="col-12"><button class="btn btn-primary btn-sm px-4" id="qbtn" onclick="genQuiz()">✨ SOẠN ĐỀ</button> <span id="qst" class="small ms-2"></span></div></div></div>
+ <div id="qr"></div><div class="${card}"><b>📁 Đề đã lưu</b><div id="qs" class="mt-2"></div></div>`);QZ=[];savedQuiz()};
+async function genQuiz(){const n=Math.min(40,+$('qn').value||10),v=id=>$('q'+id).value.trim();if(!v('t'))return alert('Nhập chủ đề!');
+ const p=`Bạn là giáo viên môn ${v('m')} ở Việt Nam. Hãy soạn ${n} câu hỏi trắc nghiệm, mỗi câu có 4 đáp án và chỉ MỘT đáp án đúng. Khối/lớp: ${v('k')}. Chủ đề: ${v('t')}. Mức độ: ${v('l')}. ${v('x')} Nội dung phải chính xác, phù hợp học sinh, đáp án đúng phân bố ngẫu nhiên giữa các vị trí. Trả về DUY NHẤT một mảng JSON (không dùng markdown), mỗi phần tử có dạng {"q":"nội dung câu hỏi","o":["đáp án A","đáp án B","đáp án C","đáp án D"],"a":0,"e":"giải thích ngắn"}; "a" là chỉ số (0-3) của đáp án đúng. Không thêm tiền tố "A.","B." vào nội dung đáp án.`;
+ $('qbtn').disabled=true;$('qst').innerText='⏳ Gemini đang soạn đề...';
+ try{const r=await fetch('/api/ai',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt:p,json:true})});
+  const j=await r.json();if(!r.ok||j.error)throw new Error(j.error||'Lỗi máy chủ ('+r.status+')');
+  const a=JSON.parse(String(j.text).replace(/```json|```/g,'').trim());
+  if(!Array.isArray(a)||!a.length)throw new Error('AI trả về sai định dạng, hãy thử lại');
+  QZ=a.filter(x=>x&&x.q&&Array.isArray(x.o)).map(x=>({q:x.q,o:[0,1,2,3].map(i=>String(x.o[i]??'')),a:Math.min(3,Math.max(0,+x.a||0)),e:x.e||''}));
+  $('qst').innerText='✅ Đã soạn '+QZ.length+' câu — hãy kiểm tra lại trước khi dùng!';drawQuiz()}
+ catch(e){$('qst').innerText='❌ '+e.message}
+ $('qbtn').disabled=false}
+function drawQuiz(){$('qr').innerHTML=`<div class="${card}"><div class="d-flex flex-wrap gap-2 mb-3"><button class="btn btn-success btn-sm" onclick="saveQuiz()">💾 Lưu đề</button><button class="btn btn-outline-primary btn-sm" onclick="printQuiz(0)">🖨 In đề</button><button class="btn btn-outline-danger btn-sm" onclick="printQuiz(1)">🖨 In đề + đáp án</button><button class="btn btn-outline-secondary btn-sm" onclick="dl('de-trac-nghiem.json',JSON.stringify(QZ,null,1),'application/json')">JSON</button></div>
+ ${QZ.map((x,i)=>`<div class="border rounded-3 p-2 mb-2"><div class="d-flex gap-2"><b>Câu ${i+1}.</b><textarea class="form-control form-control-sm" rows="2" onchange="QZ[${i}].q=this.value">${esc(x.q)}</textarea><button class="btn btn-sm text-danger" onclick="QZ.splice(${i},1);drawQuiz()">✕</button></div>
+ ${x.o.map((o,j)=>`<div class="d-flex align-items-center gap-2 mt-1"><input type="radio" name="qa${i}" ${x.a==j?'checked':''} onchange="QZ[${i}].a=${j}"><b>${'ABCD'[j]}.</b><input class="form-control form-control-sm" value="${esc(o)}" onchange="QZ[${i}].o[${j}]=this.value"></div>`).join('')}
+ <div class="small text-muted mt-1">💡 <input class="form-control form-control-sm d-inline w-75" value="${esc(x.e)}" onchange="QZ[${i}].e=this.value"></div></div>`).join('')}</div>`}
+function saveQuiz(){if(!QZ.length)return;const t=prompt('Tên đề:',($('qm').value+' - '+$('qt').value));if(!t)return;D('quizzes').push({title:t,date:new Date().toISOString(),items:QZ});save();savedQuiz()}
+function savedQuiz(){$('qs').innerHTML=D('quizzes').map((z,i)=>`<div class="d-flex align-items-center gap-2 border-bottom py-1 small"><span class="flex-grow-1">${esc(z.title)} <span class="text-muted">(${z.items.length} câu, ${dtxt(z.date).slice(0,10)})</span></span><button class="btn btn-sm btn-outline-primary" onclick="QZ=structuredClone(db.quizzes[${i}].items);drawQuiz()">Mở</button><button class="btn btn-sm text-danger" onclick="if(confirm('Xóa đề?')){db.quizzes.splice(${i},1);save();savedQuiz()}">Xóa</button></div>`).join('')||'<span class="text-muted small">Chưa có đề nào.</span>'}
+function printQuiz(ans){const w=window.open('');const t=$('qm').value+' - '+$('qt').value;
+ w.document.write(`<meta charset="UTF-8"><body style="font-family:'Times New Roman',serif;margin:30px;line-height:1.5"><h2 style="text-align:center">ĐỀ KIỂM TRA TRẮC NGHIỆM<br><small>${esc(t)}</small></h2><p>Họ và tên: ....................................... Lớp: ........</p>
+ ${QZ.map((x,i)=>`<div style="margin-bottom:10px;page-break-inside:avoid"><b>Câu ${i+1}.</b> ${esc(x.q)}<br>${x.o.map((o,j)=>`<span style="display:inline-block;width:48%"><b>${'ABCD'[j]}.</b> ${esc(o)}</span>`).join('')}</div>`).join('')}
+ ${ans?`<hr><h3>ĐÁP ÁN</h3><p>${QZ.map((x,i)=>`${i+1}-${'ABCD'[x.a]}`).join(' &nbsp; ')}</p>${QZ.map((x,i)=>x.e?`<p style="font-size:13px"><b>Câu ${i+1}:</b> ${esc(x.e)}</p>`:'').join('')}`:''}<script>print()<\/script>`)}
 /* ===== BÁO CÁO VI PHẠM (hôm nay / tổng hợp / tra cứu) ===== */
 function vRep(m){const t=today();C(`<div class="${card}"><div class="d-flex flex-wrap gap-2"><input type="date" id="rs" class="form-control form-control-sm w-auto" value="${t}"><input type="date" id="re" class="form-control form-control-sm w-auto" value="${t}">
  ${m=='sum'?'':sel('rc',clsOpts(1))+sel('rt','<option value="">Mọi lỗi</option>'+D('loi').map(l=>`<option>${esc(l.name)}</option>`).join(''))+'<input id="rq" class="form-control form-control-sm w-auto" placeholder="Tên HS...">'}
