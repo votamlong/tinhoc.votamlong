@@ -1,309 +1,345 @@
 <!DOCTYPE html>
-<html lang="vi">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>EduClass Pro - Bản độc lập</title>
+<html lang="vi"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EduClass Pro - Bản độc lập đầy đủ</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
 body{background:#f0f2f5;font-family:'Segoe UI',Tahoma,sans-serif}
-.mi{cursor:pointer;border:none;border-radius:12px!important;margin-bottom:4px;padding:10px 16px;font-weight:500}
-.mi.active{background:#ebf8ff!important;color:#2b6cb0;border-left:5px solid #3182ce}
-.gs{max-height:70vh;overflow:auto;border:1px solid #dee2e6;border-radius:12px;background:#fff}
-.gs th{position:sticky;top:0;background:#f8fafc;z-index:2;color:#0d6efd;white-space:nowrap}
+.mi{cursor:pointer;border:none;border-radius:10px!important;margin-bottom:2px;padding:8px 14px;font-size:14px}
+.mi.active{background:#ebf8ff!important;color:#2b6cb0;border-left:4px solid #3182ce}
+.gs{max-height:70vh;overflow:auto;background:#fff}.gs th{position:sticky;top:0;background:#f8fafc;z-index:2;color:#0d6efd;white-space:nowrap}
 .gs td:first-child,.gs th:first-child{position:sticky;left:0;background:#fff;z-index:3;min-width:90px;border-right:3px solid #0d6efd}
-#sidebar{width:260px;min-width:260px}
-@media(max-width:768px){#sidebar{position:fixed;left:-260px;top:0;bottom:0;z-index:999;transition:.3s}#sidebar.open{left:0}}
-</style>
-</head>
-<body>
-
-<div id="login" class="d-flex align-items-center justify-content-center vh-100">
-  <div class="card shadow-lg p-5 border-0 rounded-4" style="width:400px">
-    <div class="text-center mb-4"><i class="fas fa-school fa-4x text-primary mb-2"></i>
-      <h3 class="fw-bold">EduClass <span class="text-primary">Pro</span></h3></div>
-    <input id="email" class="form-control mb-2" placeholder="Email" value="admin@edu.vn">
-    <input id="pass" type="password" class="form-control mb-2" placeholder="Mật khẩu" value="admin123" onkeydown="if(event.key==='Enter')login()">
-    <div id="err" class="text-danger small mb-2"></div>
-    <button class="btn btn-primary w-100 rounded-pill fw-bold" onclick="login()">ĐĂNG NHẬP</button>
-  </div>
-</div>
-
+#sidebar{width:270px;min-width:270px}.big{font-size:3rem;font-weight:800;color:#0d6efd;text-align:center;min-height:90px}
+.seat{cursor:pointer;border:2px solid #eee;border-radius:12px;padding:8px;text-align:center;font-size:12px;background:#fff}.seat.sel{border-color:#dc3545}.seat.hit{background:#fff3cd;border-color:#ffc107}
+@media(max-width:768px){#sidebar{position:fixed;left:-270px;top:0;bottom:0;z-index:999;transition:.3s}#sidebar.open{left:0}}
+</style></head><body>
+<div id="login" class="d-flex align-items-center justify-content-center vh-100"><div class="card shadow-lg p-5 border-0 rounded-4" style="width:400px">
+<div class="text-center mb-4"><i class="fas fa-school fa-4x text-primary mb-2"></i><h3 class="fw-bold">EduClass <span class="text-primary">Pro</span></h3></div>
+<input id="email" class="form-control mb-2" value="admin@edu.vn"><input id="pass" type="password" class="form-control mb-2" value="admin123" onkeydown="if(event.key==='Enter')login()">
+<div id="err" class="text-danger small mb-2"></div><button class="btn btn-primary w-100 rounded-pill fw-bold" onclick="login()">ĐĂNG NHẬP</button></div></div>
 <div id="app" class="d-none vh-100 d-flex overflow-hidden">
-  <div id="sidebar" class="bg-white border-end d-flex flex-column">
-    <div class="p-3 fw-bold text-primary fs-5 border-bottom"><i class="fas fa-graduation-cap text-warning me-2"></i>EduClass</div>
-    <div id="menu" class="flex-grow-1 overflow-auto p-2"></div>
-    <div class="p-3 border-top bg-light"><div id="uname" class="fw-bold small"></div><div id="urole" class="text-muted small mb-2"></div>
-      <button class="btn btn-sm btn-outline-danger w-100 rounded-pill" onclick="logout()">Thoát</button></div>
-  </div>
-  <div class="flex-grow-1 d-flex flex-column overflow-hidden">
-    <div class="bg-white border-bottom px-3 py-3 d-flex align-items-center gap-3">
-      <button class="btn btn-outline-primary d-md-none" onclick="document.getElementById('sidebar').classList.toggle('open')"><i class="fas fa-bars"></i></button>
-      <h5 id="title" class="m-0 fw-bold text-secondary text-uppercase"></h5>
-    </div>
-    <div id="content" class="p-3 overflow-auto flex-grow-1"></div>
-  </div>
-</div>
-
+<div id="sidebar" class="bg-white border-end d-flex flex-column">
+<div class="p-3 fw-bold text-primary fs-5 border-bottom"><i class="fas fa-graduation-cap text-warning me-2"></i>EduClass</div>
+<div class="p-2"><input id="msearch" class="form-control form-control-sm" placeholder="🔍 Tìm chức năng..." oninput="filterMenu()"></div>
+<div id="menu" class="flex-grow-1 overflow-auto px-2"></div>
+<div class="p-3 border-top bg-light"><div id="uname" class="fw-bold small"></div><div id="urole" class="text-muted small mb-2"></div><button class="btn btn-sm btn-outline-danger w-100 rounded-pill" onclick="logout()">Thoát</button></div></div>
+<div class="flex-grow-1 d-flex flex-column overflow-hidden"><div class="bg-white border-bottom px-3 py-3 d-flex align-items-center gap-3">
+<button class="btn btn-outline-primary d-md-none" onclick="$('sidebar').classList.toggle('open')"><i class="fas fa-bars"></i></button><h5 id="title" class="m-0 fw-bold text-secondary text-uppercase"></h5></div>
+<div id="content" class="p-3 overflow-auto flex-grow-1"></div></div></div>
 <script>
-/* ================= CƠ SỞ DỮ LIỆU (localStorage) ================= */
-const KEY = 'educlass_db_v1';
-const SEED = {
-  users: [{email:'admin@edu.vn', pass:'admin123', role:'ADMIN', name:'Admin Tổng'}],
-  students: [{id:'HS01', name:'Nguyễn Văn A', lop:'9A', hocluc:'Giỏi', bantru:'X'}],
-  gvcn: [{lop:'9A', gv:'Thầy Nguyễn Văn B'}, {lop:'9B', gv:'Cô Trần Thị C'}],
-  loi: [{code:'L01', name:'Đi muộn', points:2}, {code:'L02', name:'Không làm bài', points:3}, {code:'L03', name:'Mất trật tự', points:2}],
-  discipline: [], attendance: [], fund: []
+/* ===== DỮ LIỆU (localStorage) ===== */
+const KEY='educlass_full_v1';
+const SEED={users:[{email:'admin@edu.vn',pass:'admin123',role:'ADMIN',name:'Admin Tổng',sid:''}],
+students:[{id:'HS01',name:'Nguyễn Văn A',lop:'9A',dob:'2012-03-12',hl:'Giỏi',hk:'Tốt',bt:'X'},{id:'HS02',name:'Trần Thị B',lop:'9A',dob:'2012-11-20',hl:'Khá',hk:'Tốt',bt:''}],
+gvcn:[{lop:'9A',gv:'Thầy Nguyễn Văn B'},{lop:'9B',gv:'Cô Trần Thị C'}],
+loi:[{code:'L01',name:'Đi học muộn',pts:2},{code:'L02',name:'Không làm bài',pts:3},{code:'L03',name:'Mất trật tự',pts:2}],
+mon:['Toán','Ngữ văn','Tiếng Anh','Vật lí','Hóa học','Sinh học','Lịch sử','Địa lí','Tin học','GDCD'].map(name=>({name})),
+tiet:[1,2,3,4,5].map(n=>({name:'Tiết '+n+' sáng'})).concat([1,2,3,4,5].map(n=>({name:'Tiết '+n+' chiều'}))),
+discipline:[],attendance:[],fund:[],tkb:{},seat:{}};
+let db=JSON.parse(localStorage.getItem(KEY)||'null')||structuredClone(SEED);
+const save=()=>localStorage.setItem(KEY,JSON.stringify(db)),D=k=>db[k]||(db[k]=[]);save();
+const $=id=>document.getElementById(id),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const today=()=>new Date().toISOString().slice(0,10),vnd=n=>Number(n).toLocaleString('vi-VN')+' đ';
+const classes=()=>[...new Set(D('students').map(s=>s.lop).concat(D('gvcn').map(g=>g.lop)))].filter(Boolean).sort();
+const clsOpts=a=>`<option value="">${a?'Toàn trường':'-- Chọn lớp --'}</option>`+classes().map(c=>`<option>${esc(c)}</option>`).join('');
+const gvOf=l=>(D('gvcn').find(g=>g.lop===l)||{}).gv||'Chưa phân công';
+const stOf=l=>D('students').filter(s=>!l||s.lop===l);
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
+let USER=null,chart=null;
+function dl(n,t,m){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([t],{type:m}));a.download=n;a.click()}
+/* ===== MENU: id|Tên|icon|quyền(A=admin,C=admin+GVCN,G=giáo viên,M=mọi người)|chức năng ===== */
+const MENU=`dashboard|Tổng quan|th-large|M|dash
+user_manager|Quản lý Tài khoản|users-cog|A|crud:users
+boarding_kitchen_2627|Quản Lý Suất Ăn Bán Trú|utensils|A|crud:boarding
+noise_monitor_2627|Cảnh Báo Ồn & Hú Còi|volume-up|A|crud:noise
+parent_meeting_2627|Thư Mời Họp Phụ Huynh|envelope-open-text|A|crud:meeting
+match_control_live|Điều Hành Giải Đấu|trophy|A|crud:match
+class_clean_2627|Bảng Trực Nhật 2627|broom|A|crud:clean
+tkb_sodo_2627|TKB - Sơ Đồ 2627|calendar-alt|A|tkb
+quy_lop_moi_2627|Quỹ Lớp 2627|wallet|A|crud:fund
+app_launcher_2627|Menu Tổng Quan 2627|th-large|A|launcher
+principal_radar_2627|Nhật Ký Điều Hành Hiệu Trưởng|user-shield|A|crud:principal
+pe_fitness_2627|Thể Chất & Sức Khỏe 2627|running|A|crud:pe
+smart_attendance_2627|Điểm Danh Thông Minh 2627|user-check|A|att
+school_bell_2627|Chuông & Trống Trường 2627|bell|A|bell
+pocket_calc_2627|Máy Tính Bỏ Túi 2627|calculator|A|calc
+meeting_notebook_2627|Sổ Tay Họp Tổ 2627|book-open|A|crud:meetnote
+ufo_calling_2627|UFO Gọi Tên Học Sinh 2627|space-shuttle|A|pick:ufo
+tug_war_2627|Kéo Co Kiến Thức 2627|gamepad|A|tug
+catch_duck_2627|Bắt Vịt 3D Gọi Tên 2627|feather-alt|A|pick:duck
+seating_picker_2627|Sơ Đồ Ngẫu Nhiên & Gọi HS 2627|chair|A|seat
+class_manager|Quản lý Lớp & Hạnh kiểm|users|G|classmgr
+attendance|Điểm danh|user-check|G|att
+scores|Sổ nhập điểm|book-open|G|crud:scores
+discipline|Ghi nhận Vi phạm|exclamation-triangle|G|crud:discipline
+detailed_scores|Sổ điểm chi tiết (vnEdu)|table-list|G|crud:scores
+ppct_manager|Phân phối chương trình|book-reader|G|crud:ppct
+work_planner|Nhật ký công việc|calendar-alt|G|crud:worklog
+vsmap_feature|Sơ đồ lớp|chalkboard|G|seat
+student_manager|Quản lý Học sinh|user-graduate|G|crud:students
+salary_manager|Quản lý Lương|wallet|C|crud:salary
+schedule_manager|Thời khóa biểu|calendar-alt|G|tkb
+violation_trends|Xu hướng nề nếp|chart-line|G|trend:all
+violation_detail_trends|Chi tiết xu hướng lỗi|chart-area|G|trend:type
+violation_processing_page|Xử lý vi phạm|gavel|G|crud:handling
+weekly_emulation|Thi đua tuần|award|G|grid
+violation_search_error|Tra cứu theo loại lỗi|search-location|G|rep:all
+error_manager|Cấu hình Danh mục Lỗi|tools|G|crud:loi
+gvcn_manager|Quản lý GVCN|chalkboard-teacher|A|crud:gvcn
+gvbm_manager|Quản lý GVBM|user-tie|A|crud:gvbm
+period_manager|Quản lý Tiết học|clock|G|crud:tiet
+adv_attendance|Điểm danh Nâng cao|user-check|G|crud:advatt
+adv_attendance_matrix|Thống kê Điểm danh & Bán trú nâng cao|chart-pie|G|attstat
+subject_manager|Quản lý Môn học|book|G|crud:mon
+birthday_manager|Quản lý Sinh nhật|birthday-cake|G|bday
+csvc_manager|Quản lý CSVC|tools|G|crud:csvc
+homeroom_book|Sổ Chủ Nhiệm|book-open|C|crud:homeroom
+homeroom_book_2627|Sổ Chủ Nhiệm 2627|book-open|C|crud:homeroom
+sodb_manager|Sổ Đầu Bài|book|G|crud:sodb
+advanced_discipline|Vi phạm nâng cao|shield-alt|G|crud:advdisc
+positive_discipline_2627|Vi phạm nâng cao tích cực 2627|heart|G|crud:posdisc
+lucky_wheel|Vòng quay gọi tên|dharmachakra|G|pick:wheel
+group_maker|Chia nhóm học sinh|users-cog|G|group
+student_batch|Nhập DS Học sinh|user-plus|G|batch
+group_emulation|Thi đua các Tổ|flag-checkered|G|crud:groupemu
+class_duty|Ban Cán Sự Lớp|user-shield|G|crud:duty
+duty_schedule|Trực Nhật & Giao Việc|broom|G|crud:clean
+seating_chart|Sơ Đồ Chỗ Ngồi|th|G|seat
+sodb_2627|Sổ Đầu Bài 2627|book-reader|G|crud:sodb
+wheel_2627|Vòng Quay 2627|dharmachakra|G|pick:wheel
+health_2627|Sức Khỏe & Y Tế 2627|heartbeat|G|crud:health
+sll_2627|Sổ Liên Lạc 2627|comment-dots|G|crud:sll
+school_overview_2627|Tổng Quan Toàn Trường|chart-line|G|overview
+scores_vnedu_2627|Sổ Điểm vnEdu|file-excel|G|crud:scores
+clock_timer_2627|Đồng Hồ & Đếm Ngược|stopwatch|G|timer
+random_num_2627|Quay Số Ngẫu Nhiên|dice|G|rnd
+word_guess_2627|Game Đoán Chữ|gamepad|G|word
+team_tasks_2627|Thông Báo Việc Tổ|tasks|G|crud:teamtask
+teacher_profile_2627|Thầy Võ Tâm Long|user-tie|G|crud:teacherprofile
+word_search_2627|Game Ô Chữ Kỳ Diệu|th|G|word
+campus_map_2627|Sơ Đồ Trường|map-marked-alt|G|crud:rooms
+timetable_2627|Thời Khóa Biểu|calendar-alt|G|tkb
+class_fund_2627|Thu Chi Quỹ Lớp|wallet|C|crud:fund
+computer_lab_2627|Thiết Bị Phòng Máy|desktop|G|crud:lab
+flip_game_2627|Lật Hình Đoán Chữ|puzzle-piece|G|word
+bonus_points_2627|Cộng Điểm Học Sinh|star|G|crud:bonus
+emulation_2627|Thi Đua Đa Năng|trophy|G|crud:groupemu
+facility_inspection_2627|Kiểm Tra Phòng CSVC|clipboard-check|G|crud:inspect
+late_pass_2627|Giấy HS Vào Lớp|ticket-alt|G|crud:latepass
+medical_check_2627|Chuyển Xuống Y Tế|heartbeat|G|crud:medical
+clerical_documents_2627|Quản Lý Văn Bản|archive|G|crud:docs
+equipment_loan_2627|Mượn Trả Thiết Bị|microscope|G|crud:loan
+library_management_2627|Thư Viện Trường|book-reader|G|crud:library
+it_registrar_2627|IT & Giáo Vụ Học Vụ|laptop-code|G|crud:itreg
+class_tuition_2627|Học Phí Lớp Chủ Nhiệm|file-invoice-dollar|C|crud:tuition
+homework_portal_2627|Sổ Báo Bài & Nộp Bài|book-reader|G|crud:homework
+security_gate_2627|Nhật Ký Bảo Vệ|shield-alt|A|crud:gate
+violation_grid|Bảng Điểm Trừ Khối|table|C|grid
+attendance_matrix|Thống kê Điểm danh & Bán trú|user-check|C|attstat
+class_violation_matrix|Bảng Điểm Trừ Lớp|user-minus|C|cvm
+discipline_stats|Thống kê Tổng hợp|chart-pie|C|dstats
+violation_report|Báo cáo Vi phạm|file-alt|C|rep:all
+lunch_report|Báo cáo Bán trú|utensils|C|lunch
+certificate|Giấy khen|certificate|C|cert
+notifications|Thông báo|bell|C|crud:notif
+global_violations_today|Vi phạm toàn trường|exclamation-triangle|C|rep:today
+violation_summary_today|Nề nếp tổng hợp ngày|list-ol|C|rep:sum
+violation_search_adv|Tra cứu vi phạm theo HS|search-plus|C|rep:all
+my_profile|Hồ sơ học tập|user-graduate|S|profile
+class_fund|Quỹ Lớp|wallet|M|crud:fund`.split('\n').map(l=>{const[id,t,i,a,h]=l.split('|');return{id,t,i,a,h}});
+const ROLES={HS:'dashboard,homework_portal_2627,my_profile,sll_2627,timetable_2627,class_fund,notifications',
+LT:'dashboard,attendance,discipline,homework_portal_2627,duty_schedule,class_duty,my_profile,timetable_2627,class_fund,notifications',
+BAOVE:'dashboard,security_gate_2627,facility_inspection_2627,late_pass_2627',
+VANTHU:'dashboard,clerical_documents_2627,security_gate_2627,student_manager',
+THIETBI:'dashboard,equipment_loan_2627,computer_lab_2627,csvc_manager,facility_inspection_2627',
+THUVIEN:'dashboard,library_management_2627',YTE:'dashboard,health_2627,late_pass_2627',
+GIAMTHI:'dashboard,discipline,violation_grid,violation_processing_page,advanced_discipline,positive_discipline_2627,global_violations_today,violation_summary_today,late_pass_2627,security_gate_2627,attendance_matrix'};
+ROLES.PH=ROLES.HOCSINH=ROLES.HS;ROLES.LOPTRUONG=ROLES.LOPTRUONG1=ROLES.LT;ROLES.TO_BAOVE=ROLES.BAOVE;ROLES.NHANVIENTHIETBI=ROLES.THIETBI;
+function allowed(){const r=String(USER.role).toUpperCase();
+ if(ROLES[r]){const s=ROLES[r].split(',');return MENU.filter(m=>s.includes(m.id))}
+ return MENU.filter(m=>r==='ADMIN'||m.a==='M'||(m.a==='G')||(m.a==='C'&&r.startsWith('GVCN')))}
+function login(){const u=D('users').find(u=>u.email.toLowerCase()===$('email').value.trim().toLowerCase()&&u.pass===$('pass').value);
+ if(!u)return $('err').innerText='Sai Email hoặc Mật khẩu!';USER=u;sessionStorage.setItem('u',u.email);boot()}
+function logout(){sessionStorage.removeItem('u');location.reload()}
+let MY=[];
+function boot(){$('login').classList.add('d-none');$('app').classList.remove('d-none');$('uname').innerText=USER.name;$('urole').innerText=USER.role;
+ MY=allowed();$('menu').innerHTML=MY.map(m=>`<div class="list-group-item mi" data-id="${m.id}" onclick="go('${m.id}')"><i class="fas fa-${m.i} text-primary me-2"></i>${esc(m.t)}</div>`).join('');go('dashboard')}
+function filterMenu(){const q=$('msearch').value.toLowerCase();document.querySelectorAll('.mi').forEach(e=>e.style.display=e.innerText.toLowerCase().includes(q)?'':'none')}
+window.onload=()=>{const e=sessionStorage.getItem('u'),u=e&&D('users').find(x=>x.email===e);if(u){USER=u;boot()}};
+function go(id){const m=MENU.find(x=>x.id===id);document.querySelectorAll('.mi').forEach(e=>e.classList.toggle('active',e.dataset.id===id));
+ $('title').innerText=m.t;$('sidebar').classList.remove('open');const[h,p]=m.h.split(':');
+ (h==='crud'?vCrud:h==='pick'?vPick:h==='rep'?vRep:h==='trend'?vTrend:VIEWS[h])(p)}
+/* ===== CRUD TỔNG QUÁT: khai báo trường 'khóa:Nhãn:kiểu' (c=lớp, s=học sinh, d=ngày, n=số, a=văn bản dài, L=lỗi, M=môn, T=tiết, o=a/b/c) ===== */
+const F={users:'email:Email,pass:Mật khẩu,role:Vai trò:o=ADMIN/GVCN/GVBM/LT/HS/PH/BAOVE/VANTHU/THIETBI/THUVIEN/YTE/GIAMTHI,name:Họ tên,sid:Mã HS liên kết',
+gvcn:'lop:Lớp,gv:Tên GVCN',gvbm:'gv:Tên GVBM,mon:Môn:M',loi:'code:Mã lỗi,name:Tên lỗi,pts:Điểm trừ:n',tiet:'name:Tên tiết',mon:'name:Tên môn',
+students:'id:Mã HS,name:Họ tên,lop:Lớp:c,dob:Ngày sinh:d,hl:Học lực:o=Giỏi/Khá/TB,hk:Hạnh kiểm:o=Tốt/Khá/TB/Yếu,bt:Bán trú:o=/X',
+discipline:'lop:Lớp:c,hs:Học sinh:s,type:Lỗi:L,note:Ghi chú:a',
+advdisc:'ngay:Ngày:d,lop:Lớp:c,hs:Học sinh:s,type:Lỗi:L,tiet:Tiết:T,mon:Môn:M,gv:GVBM,note:Ghi chú/Điểm trừ:a',
+posdisc:'ngay:Ngày:d,lop:Lớp:c,hs:Học sinh:s,type:Lỗi:L,goc:Nguyên nhân gốc rễ (tâm lý):a,xl:Hướng xử lý tích cực:a,tiet:Tiết:T,mon:Môn:M,gv:GVBM,note:Ghi chú:a',
+handling:'ngay:Ngày:d,lop:Lớp:c,hs:Học sinh:s,type:Lỗi:L,kq:Kết quả xử lý:a',
+advatt:'ngay:Ngày:d,lop:Lớp:c,hs:Học sinh:s,status:Trạng thái:o=C/V,tiet:Tiết:T,mon:Môn:M,gv:GVBM,note:Ghi chú',
+fund:'lop:Lớp:c,content:Nội dung,loai:Loại:o=Thu/Chi,amt:Số tiền:n',salary:'content:Nội dung,loai:Loại:o=Thu/Chi,amt:Số tiền:n,tt:Trạng thái:o=Chưa nhận/Đã nhận',
+tuition:'lop:Lớp:c,hs:Học sinh:s,content:Khoản thu,loai:Loại:o=Thu/Chi,amt:Số tiền:n,tt:Tình trạng:o=Chưa nộp/Đã nộp',
+scores:'lop:Lớp:c,hs:Học sinh:s,mon:Môn:M,tx1:TX1:n,tx2:TX2:n,tx3:TX3:n,tx4:TX4:n,gk:Giữa kỳ:n,ck:Cuối kỳ:n,nx:Nhận xét',
+boarding:'ngay:Ngày:d,lop:Lớp:c,suat:Số suất ăn:n,note:Ghi chú',noise:'ngay:Ngày:d,lop:Lớp:c,db:Mức ồn (dB):n,hu:Hú còi:o=Không/Có,note:Ghi chú',
+meeting:'lop:Lớp:c,ngay:Ngày họp:d,gio:Giờ,dd:Địa điểm,nd:Nội dung mời:a',match:'giai:Giải đấu,a:Đội A,b:Đội B,sa:Điểm A:n,sb:Điểm B:n,tt:Trạng thái:o=Chưa đấu/Đang đấu/Kết thúc',
+clean:'lop:Lớp:c,thu:Thứ:o=T2/T3/T4/T5/T6/T7,to:Tổ,viec:Công việc',principal:'ngay:Ngày:d,nd:Nội dung chỉ đạo:a,tt:Trạng thái:o=Mới/Đang làm/Xong',
+pe:'lop:Lớp:c,hs:Học sinh:s,cc:Chiều cao (cm):n,cn:Cân nặng (kg):n,chay:Chạy (giây):n,note:Ghi chú',meetnote:'ngay:Ngày:d,to:Tổ,nd:Nội dung:a',
+ppct:'mon:Môn:M,lop:Lớp:c,tiet:Tiết số:n,bai:Tên bài,ngay:Ngày dạy:d,note:Ghi chú',worklog:'ngay:Ngày:d,nd:Công việc:a',
+csvc:'phong:Phòng,tb:Thiết bị,loi:Mô tả lỗi,ngay:Ngày báo:d,nguoi:Người báo',
+homeroom:'lop:Lớp:c,hs:Học sinh:s,dm:Danh mục:o=Tư vấn tâm lý/Liên lạc PH/Khen thưởng/Vi phạm nghiêm trọng,nd:Nội dung:a,bp:Biện pháp,tt:Trạng thái:o=Đã xong/Đang theo dõi',
+sodb:'tuan:Tuần:n,ngay:Ngày:d,lop:Lớp:c,tiet:Tiết:T,mon:Môn:M,ppct:PPCT:n,nd:Nội dung bài dạy,nx:Nhận xét,xl:Xếp loại:o=Tốt/Khá/TB/Yếu,ky:Ký tên',
+groupemu:'ngay:Ngày:d,to:Tổ/Lớp,nd:Nội dung,diem:Điểm:n',duty:'lop:Lớp:c,cv:Chức vụ:o=Lớp trưởng/Lớp phó học tập/Lớp phó kỷ luật/Bí thư/Tổ trưởng,hs:Học sinh:s',
+health:'ngay:Ngày:d,lop:Lớp:c,hs:Học sinh:s,tc:Triệu chứng,xl:Xử lý,note:Ghi chú',sll:'ngay:Ngày:d,lop:Lớp:c,hs:Học sinh:s,nd:Nội dung liên lạc:a,ph:Phản hồi PH',
+teamtask:'ngay:Ngày:d,to:Tổ,nd:Việc cần làm:a,han:Hạn:d',teacherprofile:'tt:Mục thông tin,nd:Nội dung:a',rooms:'phong:Phòng,vt:Vị trí,mt:Mô tả',
+lab:'tb:Thiết bị,phong:Phòng,sl:Số lượng:n,tt:Tình trạng:o=Tốt/Hỏng/Đang sửa',bonus:'ngay:Ngày:d,lop:Lớp:c,hs:Học sinh:s,diem:Điểm cộng:n,ld:Lý do',
+inspect:'ngay:Ngày:d,phong:Phòng,tt:Kết quả:o=Đạt/Chưa đạt,note:Ghi chú',latepass:'lop:Lớp:c,hs:Học sinh:s,ld:Lý do,gio:Giờ vào lớp,nguoi:Người cấp',
+medical:'ngay:Ngày:d,lop:Lớp:c,hs:Học sinh:s,tc:Triệu chứng,gv:GV chuyển',docs:'so:Số hiệu,tt:Trích yếu,lv:Loại:o=Đến/Đi,ngay:Ngày:d,nx:Nơi nhận/gửi',
+loan:'tb:Thiết bị,nguoi:Người mượn,ngay:Ngày mượn:d,tra:Đã trả:o=Chưa/Rồi',library:'sach:Tên sách,nguoi:Người mượn,ngay:Ngày mượn:d,tra:Đã trả:o=Chưa/Rồi',
+itreg:'ngay:Ngày:d,viec:Công việc,nguoi:Người phụ trách,tt:Trạng thái:o=Chờ/Đang làm/Xong',homework:'ngay:Ngày:d,lop:Lớp:c,mon:Môn:M,bt:Bài tập:a,han:Hạn nộp:d',
+gate:'ngay:Ngày:d,gio:Giờ,ten:Họ tên,lh:Loại:o=Phụ huynh/Khách/Nhà cung cấp/Xe,ld:Lý do',notif:'tt:Tiêu đề,nd:Nội dung:a'};
+const COLL={advdisc:'discipline',posdisc:'discipline',advatt:'attendance'};
+const COMP={scores:['ĐTB',r=>{const t=[r.tx1,r.tx2,r.tx3,r.tx4].filter(x=>x>0),n=t.length+(r.gk>0?2:0)+(r.ck>0?3:0);return n?((t.reduce((a,b)=>a+b,0)+2*r.gk+3*r.ck)/n).toFixed(1):'-'}]};
+const parseF=k=>F[k].split(',').map(x=>{const[a,l,t='t']=x.split(':');return{k:a,l,t}});
+let CK='',EDIT=null;
+function fld(f){const id='f_'+f.k,c='form-control form-control-sm',sel=(o)=>`<select id="${id}" class="form-select form-select-sm">${o}</select>`;
+ const op=a=>a.map(x=>`<option>${esc(x)}</option>`).join('');
+ if(f.t=='a')return`<textarea id="${id}" class="${c}" rows="2"></textarea>`;
+ if(f.t=='n')return`<input id="${id}" type="number" step="any" class="${c}">`;
+ if(f.t=='d')return`<input id="${id}" type="date" class="${c}" value="${f.k=='ngay'?today():''}">`;
+ if(f.t=='c')return`<input id="${id}" list="cls" class="${c}" onchange="fillS()">`;
+ if(f.t=='s')return sel('');
+ if(f.t=='L')return sel(op(D('loi').map(x=>x.name)));if(f.t=='M')return sel(op(D('mon').map(x=>x.name)));if(f.t=='T')return sel(op(D('tiet').map(x=>x.name)));
+ if(f.t[0]=='o')return sel(op(f.t.split('=')[1].split('/')));
+ return`<input id="${id}" class="${c}">`}
+function fillS(v){const s=$('f_hs');if(!s)return;const l=$('f_lop');s.innerHTML=stOf(l?l.value:'').map(x=>`<option value="${esc(x.id)}">${esc(x.name)}</option>`).join('');if(v)s.value=v}
+const dtxt=v=>/^\d{4}-\d\d-\d\dT/.test(v)?v.slice(0,16).replace('T',' '):v;
+function vCrud(key){CK=key;EDIT=null;const fs=parseF(key);
+ $('content').innerHTML=`<datalist id="cls">${classes().map(c=>`<option>${esc(c)}</option>`).join('')}</datalist>
+ <div class="card p-3 mb-3 border-0 shadow-sm"><div class="row g-2">${fs.map(f=>`<div class="col-md-${f.t=='a'?6:3} col-6"><label class="small fw-bold">${f.l}</label>${fld(f)}</div>`).join('')}
+ <div class="col-12"><button class="btn btn-primary btn-sm px-4" onclick="crudSave()">LƯU</button> <button class="btn btn-light btn-sm" onclick="vCrud(CK)">Hủy</button>
+ <button class="btn btn-outline-secondary btn-sm float-end" onclick="crudCSV()"><i class="fas fa-file-csv"></i> CSV</button></div></div></div>
+ ${fs.some(f=>f.k=='lop')?`<select id="cf" class="form-select form-select-sm w-auto mb-2" onchange="crudList()">${clsOpts(1)}</select>`:''}
+ <div id="csum" class="mb-2"></div><div class="card table-responsive"><table class="table table-sm table-hover align-middle mb-0 small"><thead class="table-light"><tr>${fs.map(f=>`<th>${f.l}</th>`).join('')}${COMP[key]?`<th>${COMP[key][0]}</th>`:''}<th></th></tr></thead><tbody id="cl"></tbody></table></div>`;
+ fillS();crudList()}
+const coll=()=>D(COLL[CK]||CK);
+function rows(){const c=$('cf')?$('cf').value:'';return coll().map((r,i)=>({r,i})).filter(x=>!c||x.r.lop===c).filter(x=>CK!='advdisc'&&CK!='posdisc'&&CK!='discipline'||true)}
+function crudList(){const fs=parseF(CK),L=rows();
+ $('cl').innerHTML=L.slice().reverse().map(({r,i})=>`<tr>${fs.map(f=>`<td>${esc(f.t=='s'?(r.name||r[f.k]):f.t=='n'||f.k=='pass'&&0?r[f.k]:dtxt(r[f.k]))}</td>`).join('')}${COMP[CK]?`<td class="fw-bold">${COMP[CK][1](r)}</td>`:''}
+ <td class="text-nowrap"><button class="btn btn-sm text-primary" onclick="crudEdit(${i})"><i class="fas fa-edit"></i></button><button class="btn btn-sm text-danger" onclick="crudDel(${i})"><i class="fas fa-trash"></i></button></td></tr>`).join('')||'<tr><td colspan="20" class="text-center text-muted p-4">Chưa có dữ liệu</td></tr>';
+ if(fs.some(f=>f.k=='amt')){const s=t=>L.filter(x=>x.r.loai==t).reduce((a,x)=>a+(x.r.amt||0),0);
+  $('csum').innerHTML=`<span class="badge bg-success me-1">Thu: ${vnd(s('Thu'))}</span><span class="badge bg-danger me-1">Chi: ${vnd(s('Chi'))}</span><span class="badge bg-primary">Tồn: ${vnd(s('Thu')-s('Chi'))}</span>`}}
+function crudSave(){const fs=parseF(CK),r={};fs.forEach(f=>{const v=$('f_'+f.k).value;r[f.k]=f.t=='n'?Number(v)||0:v.trim()});
+ if(!fs.some(f=>f.t!='n'&&r[f.k]))return alert('Nhập dữ liệu!');
+ if(r.hs){const s=D('students').find(x=>x.id==r.hs);if(s){r.id=s.id;r.name=s.name;r.lop=r.lop||s.lop}}
+ if(CK=='advatt')r.status=r.status||'C';
+ const old=EDIT!=null?coll()[EDIT]:{};Object.assign(old,r);if(!old.date)old.date=r.ngay||new Date().toISOString();if(r.ngay)old.date=r.ngay;old._by=USER.name;
+ if(EDIT==null)coll().push(old);save();vCrud(CK)}
+function crudEdit(i){const r=coll()[i];EDIT=i;parseF(CK).forEach(f=>{if(f.t=='s')fillS(r.hs);else if($('f_'+f.k))$('f_'+f.k).value=r[f.k]??''});window.scrollTo(0,0);$('content').scrollTop=0}
+function crudDel(i){if(confirm('Xóa dòng này?')){coll().splice(i,1);save();crudList()}}
+function crudCSV(){const fs=parseF(CK),q=v=>'"'+String(v??'').replace(/"/g,'""')+'"';
+ dl(CK+'.csv','\ufeff'+fs.map(f=>q(f.l)).join(',')+'\n'+rows().map(x=>fs.map(f=>q(x.r[f.k])).join(',')).join('\n'),'text/csv')}
+/* ===== CÁC MÀN HÌNH ĐẶC THÙ ===== */
+const C=h=>$('content').innerHTML=h,card='card border-0 shadow-sm rounded-4 p-3 mb-3';
+const sel=(id,o,ch='')=>`<select id="${id}" class="form-select form-select-sm w-auto" onchange="${ch}">${o}</select>`;
+const VIEWS={
+dash(){C(`${sel('dc',clsOpts(1),'drawDash()')}<div class="row g-3 my-1 text-center">${['SĨ SỐ|d1','TỶ LỆ GIỎI|d2','VI PHẠM|d3','HÔM NAY VẮNG|d4'].map(x=>{const[a,b]=x.split('|');return`<div class="col-6 col-md-3"><div class="${card} mb-0"><h3 id="${b}">0</h3><small>${a}</small></div></div>`}).join('')}</div>
+ <div class="${card} mt-3" style="height:300px"><canvas id="ch"></canvas></div>`);drawDash()},
+att(){C(`<div class="${card}"><div class="d-flex flex-wrap gap-2 align-items-center">${sel('ac',clsOpts(),'listAtt()')}<input type="date" id="ad" class="form-control form-control-sm w-auto" value="${today()}" onchange="listAtt()"><span id="agv" class="badge bg-info bg-opacity-10 text-info"></span>
+ <button class="btn btn-sm btn-outline-danger" onclick="document.querySelectorAll('#al select').forEach(s=>s.value='C')">Tất cả có mặt</button><button class="btn btn-primary btn-sm ms-auto px-4" onclick="saveAtt()">LƯU</button></div>
+ <table class="table mb-0 mt-2 align-middle"><tbody id="al"></tbody></table></div>`)},
+classmgr(){C(`${sel('mc',clsOpts(),'listMgr()')}<div class="card table-responsive mt-2"><table class="table table-sm align-middle mb-0"><thead class="table-light"><tr><th>Học sinh</th><th>Học lực</th><th>Hạnh kiểm</th></tr></thead><tbody id="ml"></tbody></table></div>`)},
+batch(){C(`<div class="${card}"><p class="small">Dán mỗi dòng: <code>Mã,Họ tên,Lớp</code> (từ Excel: copy 3 cột rồi dán, hệ thống tự nhận Tab).</p><textarea id="bulk" class="form-control" rows="10"></textarea><button class="btn btn-success mt-2" onclick="bulk()">NHẬP DANH SÁCH</button></div>`)},
+grid(){const t=today();C(`<div class="${card}"><div class="d-flex flex-wrap gap-2">${sel('gg','<option value="">Toàn trường</option>'+[6,7,8,9].map(k=>`<option value="${k}">Khối ${k}</option>`).join(''))}<input type="date" id="gs" class="form-control form-control-sm w-auto" value="${t}"><input type="date" id="ge" class="form-control form-control-sm w-auto" value="${t}"><button class="btn btn-primary btn-sm px-4" onclick="drawGrid()">LỌC</button></div></div><div class="gs"><table class="table table-bordered table-sm text-center mb-0" id="gt"></table></div><small class="text-muted">Điểm thi đua = 100 − tổng điểm trừ (theo danh mục lỗi).</small>`)},
+cvm(){const t=today();C(`<div class="${card}"><div class="d-flex flex-wrap gap-2">${sel('vc',clsOpts())}<input type="date" id="vs" class="form-control form-control-sm w-auto" value="${t}"><input type="date" id="ve" class="form-control form-control-sm w-auto" value="${t}"><button class="btn btn-danger btn-sm px-4" onclick="drawCvm()">XEM</button></div></div><div class="gs"><table class="table table-bordered table-sm text-center mb-0" id="vt"></table></div>`)},
+attstat(){const t=today();C(`<div class="${card}"><div class="d-flex flex-wrap gap-2"><input type="date" id="as" class="form-control form-control-sm w-auto" value="${t}"><input type="date" id="ae" class="form-control form-control-sm w-auto" value="${t}"><button class="btn btn-primary btn-sm px-4" onclick="drawAttStat()">LỌC</button></div></div>
+ <div class="card table-responsive"><table class="table table-bordered table-sm text-center align-middle mb-0"><thead class="table-light"><tr><th>LỚP</th><th>GVCN</th><th>SĨ SỐ</th><th>VẮNG</th><th>TRỄ</th><th>HIỆN DIỆN</th><th>BÁN TRÚ</th><th class="text-start">Danh sách vắng</th></tr></thead><tbody id="ab"></tbody></table></div>`);drawAttStat()},
+lunch(){const bt=D('students').filter(s=>s.bt=='X'),ab=new Set(D('attendance').filter(a=>a.date.slice(0,10)==today()&&a.status=='V').map(a=>a.id)),v=bt.filter(s=>ab.has(s.id)).length;
+ C(`<div class="row g-3 text-center text-white"><div class="col-4"><div class="card p-4 bg-primary"><h6>ĐĂNG KÝ BÁN TRÚ</h6><h2>${bt.length}</h2></div></div><div class="col-4"><div class="card p-4 bg-danger"><h6>VẮNG HÔM NAY</h6><h2>${v}</h2></div></div><div class="col-4"><div class="card p-4 bg-success"><h6>ĂN THỰC TẾ</h6><h2>${bt.length-v}</h2></div></div></div>`)},
+dstats(){C(`${sel('ds',clsOpts(),'drawDstats()')}<div class="card table-responsive mt-2"><table class="table table-striped table-sm mb-0"><thead class="table-light"><tr><th>Học sinh</th><th>Vắng</th><th>Số lỗi</th><th>Chi tiết</th></tr></thead><tbody id="dsb"></tbody></table></div>`)},
+bday(){const m=new Date().getMonth()+1;C(`${sel('bm',Array.from({length:12},(_,i)=>`<option value="${i+1}" ${i+1==m?'selected':''}>Tháng ${i+1}</option>`).join(''),'drawBday()')}<div class="card table-responsive mt-2"><table class="table table-sm mb-0"><thead class="table-light"><tr><th>Ngày</th><th>Họ tên</th><th>Lớp</th></tr></thead><tbody id="bb"></tbody></table></div>`);drawBday()},
+cert(){C(`<div class="${card}"><div class="row g-2">${['cc|'+clsOpts(),'cs|'].map(x=>{const[i,o]=x.split('|');return`<div class="col-md-4">${sel(i,o,i=='cc'?"$('cs').innerHTML=stOf($('cc').value).map(s=>`<option>${s.name}</option>`).join('')":'')}</div>`}).join('')}<div class="col-md-4"><input id="ct" class="form-control form-control-sm" value="HỌC SINH GIỎI"></div></div><button class="btn btn-primary btn-sm mt-2" onclick="printCert()">IN GIẤY KHEN</button></div>`)},
+tkb(){const w=Object.keys(db.tkb).pop()||'1';C(`<div class="${card}"><div class="d-flex gap-2 align-items-center"><b>Tuần</b><input id="tw" class="form-control form-control-sm w-auto" value="${w}" onchange="drawTkb()"><button class="btn btn-success btn-sm ms-auto px-4" onclick="saveTkb()">LƯU TKB</button></div></div><div class="card table-responsive"><table class="table table-bordered table-sm text-center mb-0"><thead class="table-primary"><tr><th>TIẾT</th><th>GIỜ</th>${['T2','T3','T4','T5','T6','T7'].map(x=>`<th>${x}</th>`).join('')}</tr></thead><tbody id="tb"></tbody></table></div>`);drawTkb()},
+group(){C(`<div class="${card}"><div class="d-flex gap-2">${sel('gc',clsOpts())}<input id="gn" type="number" value="4" min="2" class="form-control form-control-sm w-auto"><button class="btn btn-primary btn-sm" onclick="makeGroups()">CHIA NHÓM</button></div></div><div id="gr" class="row g-2"></div>`)},
+seat(){C(`<div class="${card}"><div class="d-flex flex-wrap gap-2">${sel('sc',clsOpts(),'drawSeat()')}<button class="btn btn-warning btn-sm" onclick="shuffleSeat()">🔀 XÁO TRỘN</button><button class="btn btn-danger btn-sm" onclick="callSeat()">🎯 GỌI HỌC SINH</button><small class="text-muted align-self-center">Bấm 2 ô để hoán đổi chỗ</small></div><div class="text-center my-3"><span class="badge bg-secondary px-5 py-2">BỤC GIẢNG</span></div><div id="sg" style="display:grid;grid-template-columns:repeat(6,minmax(90px,1fr));gap:8px;overflow:auto"></div></div>`)},
+rnd(){C(`<div class="${card} text-center"><div class="d-flex gap-2 justify-content-center mb-3"><input id="r1" type="number" value="1" class="form-control form-control-sm w-auto"><input id="r2" type="number" value="40" class="form-control form-control-sm w-auto"><button class="btn btn-primary btn-sm" onclick="spin(()=>{const a=+$('r1').value,b=+$('r2').value;return a+Math.random()*(b-a+1)|0})">QUAY SỐ</button></div><div id="bigout" class="big">?</div></div>`)},
+timer(){C(`<div class="${card} text-center"><div id="clk" class="big">--:--:--</div><div class="d-flex gap-2 justify-content-center"><input id="tm" type="number" value="5" class="form-control form-control-sm" style="width:80px"><span class="align-self-center">phút</span><button class="btn btn-primary btn-sm" onclick="cd()">ĐẾM NGƯỢC</button><button class="btn btn-outline-secondary btn-sm" onclick="clearInterval(TI);tick()">Dừng</button></div><div id="cdo" class="big text-danger"></div></div>`);tick()},
+bell(){C(`<div class="${card} text-center"><h6>Chuông & Trống</h6><div class="d-flex gap-3 justify-content-center flex-wrap">${[['🔔 Chuông vào lớp','ring(880,3)'],['🔔 Chuông ra chơi','ring(660,2)'],['🥁 Trống','drum(4)'],['📣 Còi','ring(1200,1,"square")']].map(x=>`<button class="btn btn-lg btn-warning" onclick='${x[1]}'>${x[0]}</button>`).join('')}</div></div>`)},
+calc(){C(`<div class="${card}" style="max-width:320px"><input id="ci" class="form-control form-control-lg text-end mb-2" onkeydown="if(event.key==='Enter')calc()"><div class="row g-1">${'7 8 9 / 4 5 6 * 1 2 3 - 0 . ( + ) C ='.split(' ').map(k=>`<div class="col-3"><button class="btn btn-light border w-100" onclick="key('${k}')">${k}</button></div>`).join('')}</div></div>`)},
+tug(){TUG=0;C(`<div class="${card} text-center"><h6>Đội xanh kéo về phải, đội đỏ kéo về trái — đủ 5 điểm chênh là thắng!</h6><div class="progress my-3" style="height:34px"><div id="tp" class="progress-bar bg-danger" style="width:50%">50%</div><div class="progress-bar bg-primary flex-grow-1"></div></div><div class="d-flex gap-3 justify-content-center"><button class="btn btn-danger btn-lg" onclick="pull(-1)">ĐỘI ĐỎ +1</button><button class="btn btn-primary btn-lg" onclick="pull(1)">ĐỘI XANH +1</button><button class="btn btn-light" onclick="VIEWS.tug()">Làm lại</button></div><div id="tw2" class="big"></div></div>`)},
+word(){C(`<div class="${card} text-center"><div id="wset" class="d-flex gap-2 justify-content-center"><input id="ww" type="password" class="form-control form-control-sm w-auto" placeholder="Từ khóa (GV nhập)"><input id="wh" class="form-control form-control-sm w-auto" placeholder="Gợi ý"><button class="btn btn-primary btn-sm" onclick="wstart()">BẮT ĐẦU</button></div><div id="wh2" class="text-muted my-2"></div><div id="wd" class="big" style="letter-spacing:8px"></div><div id="wk"></div><div id="wl" class="fw-bold"></div></div>`)},
+launcher(){C(`<div class="row g-2">${MY.map(m=>`<div class="col-6 col-md-3 col-lg-2"><div class="card h-100 border-0 shadow-sm text-center p-3" style="cursor:pointer" onclick="go('${m.id}')"><i class="fas fa-${m.i} fa-2x text-primary mb-2"></i><small class="fw-bold">${esc(m.t)}</small></div></div>`).join('')}</div>`)},
+overview(){const t=today();C(`<div class="row g-3 text-center">${[['Học sinh',D('students').length],['Số lớp',classes().length],['Vi phạm hôm nay',D('discipline').filter(d=>d.date.slice(0,10)==t).length],['Vắng hôm nay',D('attendance').filter(a=>a.date.slice(0,10)==t&&a.status=='V').length],['Tài khoản',D('users').length],['Giao dịch quỹ',D('fund').length]].map(x=>`<div class="col-6 col-md-4"><div class="${card}"><h2>${x[1]}</h2><small>${x[0]}</small></div></div>`).join('')}</div>`)},
+profile(){const id=USER.sid||'';C(`<div class="${card}"><input id="pid" class="form-control form-control-sm w-auto d-inline" placeholder="Mã HS" value="${esc(id)}"><button class="btn btn-primary btn-sm ms-1" onclick="drawProfile()">XEM</button></div><div id="pf"></div>`);if(id)drawProfile()}
 };
-let db = JSON.parse(localStorage.getItem(KEY) || 'null') || structuredClone(SEED);
-const save = () => localStorage.setItem(KEY, JSON.stringify(db));
-save();
-
-const $ = id => document.getElementById(id);
-const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const today = () => new Date().toISOString().slice(0, 10);
-const classes = () => [...new Set(db.students.map(s => s.lop).concat(db.gvcn.map(g => g.lop)))].filter(Boolean).sort();
-const clsOpts = (all) => (all ? '<option value="">Toàn trường</option>' : '<option value="">-- Chọn lớp --</option>') + classes().map(c => `<option>${esc(c)}</option>`).join('');
-const gvOf = lop => (db.gvcn.find(g => g.lop === lop) || {}).gv || 'Chưa phân công';
-const vnd = n => Number(n).toLocaleString('vi-VN') + ' đ';
-let USER = null, chart = null;
-
-/* ================= ĐĂNG NHẬP & PHÂN QUYỀN ================= */
-const MENUS = {
-  dashboard:['Tổng quan','fa-th-large'], students:['Quản lý học sinh','fa-user-graduate'],
-  attendance:['Điểm danh','fa-user-check'], discipline:['Ghi nhận vi phạm','fa-exclamation-triangle'],
-  grid:['Bảng điểm trừ / Thi đua','fa-table'], fund:['Quỹ lớp','fa-wallet'],
-  settings:['Danh mục & Tài khoản','fa-cog'], backup:['Sao lưu / Khôi phục','fa-database']
-};
-const ROLE_MENU = {
-  ADMIN: Object.keys(MENUS),
-  GVCN: ['dashboard','students','attendance','discipline','grid','fund'],
-  GVBM: ['dashboard','attendance','discipline'],
-  LT: ['dashboard','attendance','discipline','fund'],
-  HS: ['dashboard','fund'], PH: ['dashboard','fund']
-};
-function login() {
-  const u = db.users.find(u => u.email.toLowerCase() === $('email').value.trim().toLowerCase() && u.pass === $('pass').value);
-  if (!u) return $('err').innerText = 'Sai Email hoặc Mật khẩu!';
-  USER = u; sessionStorage.setItem('u', u.email); boot();
-}
-function logout() { sessionStorage.removeItem('u'); location.reload(); }
-function boot() {
-  $('login').classList.add('d-none'); $('app').classList.remove('d-none');
-  $('uname').innerText = USER.name; $('urole').innerText = USER.role;
-  const ids = ROLE_MENU[String(USER.role).toUpperCase()] || ROLE_MENU.GVBM;
-  $('menu').innerHTML = ids.map(id => `<div class="list-group-item mi" data-id="${id}" onclick="go('${id}')"><i class="fas ${MENUS[id][1]} text-primary me-3"></i>${MENUS[id][0]}</div>`).join('');
-  go('dashboard');
-}
-window.onload = () => {
-  const e = sessionStorage.getItem('u'); const u = e && db.users.find(x => x.email === e);
-  if (u) { USER = u; boot(); }
-};
-const VIEWS = {dashboard:vDash, students:vStudents, attendance:vAtt, discipline:vDisc, grid:vGrid, fund:vFund, settings:vSettings, backup:vBackup};
-function go(id) {
-  document.querySelectorAll('.mi').forEach(e => e.classList.toggle('active', e.dataset.id === id));
-  $('title').innerText = MENUS[id][0]; $('sidebar').classList.remove('open'); VIEWS[id]();
-}
-
-/* ================= TỔNG QUAN ================= */
-function vDash() {
-  $('content').innerHTML = `<select id="dc" class="form-select w-auto mb-3" onchange="drawDash()">${clsOpts(true)}</select>
-  <div class="row g-3 mb-3 text-center">
-    <div class="col-4"><div class="card p-3 border-0 shadow-sm rounded-4"><h3 id="d1">0</h3><small>SĨ SỐ</small></div></div>
-    <div class="col-4"><div class="card p-3 border-0 shadow-sm rounded-4"><h3 id="d2">0%</h3><small>TỶ LỆ GIỎI</small></div></div>
-    <div class="col-4"><div class="card p-3 border-0 shadow-sm rounded-4"><h3 id="d3">0</h3><small>VI PHẠM</small></div></div></div>
-  <div class="card p-3 border-0 shadow-sm rounded-4" style="height:320px"><canvas id="ch"></canvas></div>`;
-  drawDash();
-}
-function drawDash() {
-  const c = $('dc').value, st = db.students.filter(s => !c || s.lop === c);
-  const n = k => st.filter(s => s.hocluc === k).length;
-  $('d1').innerText = st.length; $('d2').innerText = st.length ? Math.round(n('Giỏi') / st.length * 100) + '%' : '0%';
-  $('d3').innerText = db.discipline.filter(d => !c || d.lop === c).length;
-  if (chart) chart.destroy();
-  chart = new Chart($('ch'), {type:'doughnut', data:{labels:['Giỏi','Khá','TB'], datasets:[{data:[n('Giỏi'), n('Khá'), st.length - n('Giỏi') - n('Khá')], backgroundColor:['#198754','#0d6efd','#ffc107']}]}, options:{maintainAspectRatio:false}});
-}
-
-/* ================= HỌC SINH ================= */
-function vStudents() {
-  $('content').innerHTML = `<div class="card p-3 mb-3 border-0 shadow-sm"><div class="row g-2">
-    <div class="col-md-2"><input id="s-id" class="form-control" placeholder="Mã HS"></div>
-    <div class="col-md-3"><input id="s-name" class="form-control" placeholder="Họ tên"></div>
-    <div class="col-md-2"><input id="s-lop" class="form-control" placeholder="Lớp"></div>
-    <div class="col-md-2"><select id="s-hl" class="form-select"><option>Giỏi</option><option>Khá</option><option>Trung bình</option></select></div>
-    <div class="col-md-1"><button class="btn btn-primary w-100" onclick="addStudent()">+</button></div></div>
-    <div class="mt-2 small text-muted">Hoặc nhập nhiều: dán mỗi dòng <code>Mã,Họ tên,Lớp</code>:</div>
-    <textarea id="s-bulk" class="form-control mt-1" rows="3"></textarea>
-    <button class="btn btn-sm btn-success mt-2" onclick="bulkStudents()">NHẬP DANH SÁCH</button></div>
-  <select id="sf" class="form-select w-auto mb-2" onchange="listStudents()">${clsOpts(true)}</select>
-  <div class="card table-responsive"><table class="table table-sm mb-0 align-middle"><thead class="table-light"><tr><th>Mã</th><th>Họ tên</th><th>Lớp</th><th>Học lực</th><th></th></tr></thead><tbody id="sl"></tbody></table></div>`;
-  listStudents();
-}
-function listStudents() {
-  const c = $('sf').value;
-  $('sl').innerHTML = db.students.map((s, i) => ({s, i})).filter(x => !c || x.s.lop === c).map(({s, i}) =>
-    `<tr><td>${esc(s.id)}</td><td><input class="form-control form-control-sm" value="${esc(s.name)}" onchange="db.students[${i}].name=this.value;save()"></td><td>${esc(s.lop)}</td><td>${esc(s.hocluc)}</td>
-    <td><button class="btn btn-sm text-danger" onclick="delStudent(${i})"><i class="fas fa-trash"></i></button></td></tr>`).join('');
-}
-function addStudent() {
-  const id = $('s-id').value.trim(), name = $('s-name').value.trim(), lop = $('s-lop').value.trim();
-  if (!id || !name || !lop) return alert('Nhập đủ Mã, Tên, Lớp!');
-  if (db.students.some(s => s.id === id)) return alert('Mã đã tồn tại!');
-  db.students.push({id, name, lop, hocluc:$('s-hl').value, bantru:''}); save(); vStudents();
-}
-function bulkStudents() {
-  let n = 0;
-  $('s-bulk').value.split('\n').forEach(l => {
-    const [id, name, lop] = l.split(',').map(x => x && x.trim());
-    if (id && name && lop && !db.students.some(s => s.id === id)) { db.students.push({id, name, lop, hocluc:'Khá', bantru:''}); n++; }
-  });
-  save(); alert('Đã thêm ' + n + ' học sinh'); vStudents();
-}
-function delStudent(i) { if (confirm('Xóa học sinh?')) { db.students.splice(i, 1); save(); listStudents(); } }
-
-/* ================= ĐIỂM DANH ================= */
-function vAtt() {
-  $('content').innerHTML = `<div class="card border-0 shadow-sm rounded-4"><div class="card-header bg-white d-flex flex-wrap gap-2 align-items-center">
-    <select id="ac" class="form-select w-auto" onchange="listAtt()">${clsOpts()}</select>
-    <input type="date" id="ad" class="form-control w-auto" value="${today()}" onchange="listAtt()">
-    <span id="agv" class="badge bg-info bg-opacity-10 text-info"></span>
-    <button class="btn btn-primary rounded-pill ms-auto px-4" onclick="saveAtt()">LƯU</button></div>
-    <div class="table-responsive"><table class="table mb-0 align-middle"><tbody id="al"></tbody></table></div></div>`;
-}
-function listAtt() {
-  const c = $('ac').value, d = $('ad').value; $('agv').innerText = c ? 'GVCN: ' + gvOf(c) : '';
-  $('al').innerHTML = db.students.filter(s => s.lop === c).map(s => {
-    const rec = db.attendance.find(a => a.date === d && a.id === s.id);
-    return `<tr><td class="ps-3">${esc(s.name)}</td><td><select class="form-select form-select-sm w-auto" data-id="${esc(s.id)}"><option value="C">Có mặt</option><option value="V" ${rec && rec.status === 'V' ? 'selected' : ''}>Vắng</option></select></td></tr>`;
-  }).join('');
-}
-function saveAtt() {
-  const d = $('ad').value, c = $('ac').value; if (!c) return alert('Chọn lớp!');
-  document.querySelectorAll('#al select').forEach(sel => {
-    const s = db.students.find(x => x.id === sel.dataset.id);
-    db.attendance = db.attendance.filter(a => !(a.date === d && a.id === s.id));
-    db.attendance.push({date:d, id:s.id, name:s.name, lop:s.lop, status:sel.value});
-  });
-  save(); alert('✅ Đã lưu điểm danh!');
-}
-
-/* ================= VI PHẠM ================= */
-function vDisc() {
-  $('content').innerHTML = `<div class="row g-3"><div class="col-md-5"><div class="card p-4 border-0 shadow rounded-4 border-top border-danger border-5">
-    <h6 class="fw-bold text-danger">PHIẾU KỶ LUẬT</h6>
-    <select id="dl" class="form-select mb-2" onchange="discStudents()">${clsOpts()}</select>
-    <select id="ds" class="form-select mb-2"></select>
-    <select id="dt" class="form-select mb-2">${db.loi.map(l => `<option>${esc(l.name)}</option>`).join('')}</select>
-    <textarea id="dn" class="form-control mb-3" rows="2" placeholder="Ghi chú"></textarea>
-    <button class="btn btn-danger rounded-pill fw-bold" onclick="saveDisc()">GHI LỖI</button></div></div>
-    <div class="col-md-7"><div class="card p-3 border-0 shadow-sm rounded-4"><h6>Lịch sử vi phạm</h6><div id="dh" class="list-group"></div></div></div></div>`;
-  discHist();
-}
-function discStudents() {
-  $('ds').innerHTML = db.students.filter(s => s.lop === $('dl').value).map(s => `<option value="${esc(s.id)}">${esc(s.name)}</option>`).join(''); discHist();
-}
-function discHist() {
-  const c = $('dl').value;
-  $('dh').innerHTML = db.discipline.filter(d => !c || d.lop === c).slice(-20).reverse().map(x =>
-    `<div class="list-group-item small"><b>${esc(x.name)}</b> (${esc(x.lop)}) - ${esc(x.type)}<span class="text-muted float-end">${esc(x.date.replace('T', ' ').slice(0, 16))}</span><div class="text-muted">${esc(x.note)}</div></div>`).join('') || '<div class="text-muted">Chưa có.</div>';
-}
-function saveDisc() {
-  const s = db.students.find(x => x.id === $('ds').value); if (!s) return alert('Chọn học sinh!');
-  db.discipline.push({date:new Date().toISOString(), id:s.id, name:s.name, lop:s.lop, type:$('dt').value, note:$('dn').value});
-  save(); $('dn').value = ''; discHist(); alert('✅ Đã ghi nhận!');
-}
-
-/* ================= BẢNG ĐIỂM TRỪ / THI ĐUA ================= */
-function vGrid() {
-  const t = today();
-  $('content').innerHTML = `<div class="card border-0 shadow-sm rounded-4"><div class="card-header bg-white d-flex flex-wrap gap-2">
-    <input type="date" id="gs" class="form-control w-auto" value="${t}"><input type="date" id="ge" class="form-control w-auto" value="${t}">
-    <button class="btn btn-primary rounded-pill px-4" onclick="drawGrid()">LỌC</button></div>
-    <div class="gs"><table class="table table-bordered table-sm text-center mb-0" id="gt"></table></div>
-    <div class="card-footer small text-muted">Điểm thi đua bắt đầu từ 100, trừ theo điểm của từng lỗi.</div></div>`;
-}
-function drawGrid() {
-  const s = $('gs').value, e = $('ge').value;
-  const inR = d => { const x = d.date.slice(0, 10); return x >= s && x <= e; };
-  const rows = classes().map(lop => {
-    let pts = 100;
-    const cells = db.loi.map(l => { const n = db.discipline.filter(d => d.lop === lop && d.type === l.name && inR(d)).length; pts -= n * l.points; return `<td>${n || ''}</td>`; }).join('');
-    return {pts, html:`<tr><td class="fw-bold">${esc(lop)}</td><td>${esc(gvOf(lop))}</td>${cells}<td class="fw-bold text-danger">${pts}</td></tr>`};
-  }).sort((a, b) => b.pts - a.pts);
-  $('gt').innerHTML = `<thead><tr><th>LỚP</th><th>GVCN</th>${db.loi.map(l => `<th title="${esc(l.name)} (-${l.points})">${esc(l.code)}</th>`).join('')}<th>ĐIỂM</th></tr></thead><tbody>${rows.map(r => r.html).join('')}</tbody>`;
-}
-
-/* ================= QUỸ LỚP ================= */
-function vFund() {
-  $('content').innerHTML = `<select id="fc" class="form-select w-auto mb-3" onchange="drawFund()">${clsOpts()}</select>
-  <div class="row g-3 mb-3 text-center text-white">
-    <div class="col-4"><div class="card p-3 bg-success"><small>THU</small><h5 id="f1">0</h5></div></div>
-    <div class="col-4"><div class="card p-3 bg-danger"><small>CHI</small><h5 id="f2">0</h5></div></div>
-    <div class="col-4"><div class="card p-3 bg-primary"><small>TỒN</small><h5 id="f3">0</h5></div></div></div>
-  <div class="card p-3 mb-3 border-0 shadow-sm"><div class="row g-2">
-    <div class="col-md-5"><input id="fn" class="form-control" placeholder="Nội dung"></div>
-    <div class="col-md-2"><select id="ft" class="form-select"><option>Thu</option><option>Chi</option></select></div>
-    <div class="col-md-3"><input id="fa" type="number" class="form-control" placeholder="Số tiền"></div>
-    <div class="col-md-2"><button class="btn btn-primary w-100" onclick="addFund()">LƯU</button></div></div></div>
-  <div class="card table-responsive"><table class="table mb-0 small"><tbody id="fl"></tbody></table></div>`;
-}
-function drawFund() {
-  const c = $('fc').value, items = db.fund.filter(f => f.lop === c);
-  const sum = t => items.filter(f => f.type === t).reduce((a, f) => a + f.amount, 0);
-  $('f1').innerText = vnd(sum('Thu')); $('f2').innerText = vnd(sum('Chi')); $('f3').innerText = vnd(sum('Thu') - sum('Chi'));
-  $('fl').innerHTML = items.slice().reverse().map(f => `<tr><td>${esc(f.date)}</td><td>${esc(f.content)}</td><td>${esc(f.creator)}</td>
-    <td class="text-end ${f.type === 'Thu' ? 'text-success' : 'text-danger'}">${f.type === 'Thu' ? '+' : '-'}${vnd(f.amount)}</td>
-    <td><button class="btn btn-sm text-danger" onclick="delFund('${f.id}')"><i class="fas fa-trash"></i></button></td></tr>`).join('');
-}
-function addFund() {
-  const c = $('fc').value; if (!c) return alert('Chọn lớp!');
-  db.fund.push({id:'F' + Date.now(), date:new Date().toLocaleString('vi-VN'), content:$('fn').value, type:$('ft').value, amount:Number($('fa').value) || 0, lop:c, creator:USER.name});
-  save(); drawFund();
-}
-function delFund(id) { if (confirm('Xóa giao dịch?')) { db.fund = db.fund.filter(f => f.id !== id); save(); drawFund(); } }
-
-/* ================= DANH MỤC & TÀI KHOẢN ================= */
-function crud(key, title, fields) {
-  const head = fields.map(f => `<th>${f[1]}</th>`).join('');
-  const rows = db[key].map((r, i) => `<tr>${fields.map(f => `<td><input class="form-control form-control-sm" value="${esc(r[f[0]])}" onchange="db.${key}[${i}].${f[0]}=${f[2] === 'n' ? 'Number(this.value)' : 'this.value'};save()"></td>`).join('')}
-    <td><button class="btn btn-sm text-danger" onclick="db.${key}.splice(${i},1);save();vSettings()"><i class="fas fa-trash"></i></button></td></tr>`).join('');
-  return `<div class="card border-0 shadow-sm rounded-4 mb-3"><div class="card-header bg-white d-flex justify-content-between"><b>${title}</b>
-    <button class="btn btn-sm btn-success" onclick="db.${key}.push({${fields.map(f => f[0] + ':' + (f[2] === 'n' ? 0 : "''")).join(',')}});save();vSettings()">+ Thêm</button></div>
-    <div class="table-responsive"><table class="table table-sm mb-0"><thead><tr>${head}<th></th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
-}
-function vSettings() {
-  $('content').innerHTML =
-    crud('gvcn', 'Giáo viên chủ nhiệm', [['lop', 'Lớp'], ['gv', 'Tên GVCN']]) +
-    crud('loi', 'Danh mục lỗi vi phạm', [['code', 'Mã'], ['name', 'Tên lỗi'], ['points', 'Điểm trừ', 'n']]) +
-    crud('users', 'Tài khoản (vai trò: ADMIN, GVCN, GVBM, LT, HS, PH)', [['email', 'Email'], ['pass', 'Mật khẩu'], ['role', 'Vai trò'], ['name', 'Họ tên']]);
-}
-
-/* ================= SAO LƯU / KHÔI PHỤC ================= */
-function vBackup() {
-  $('content').innerHTML = `<div class="card p-4 border-0 shadow-sm rounded-4">
-    <p class="text-muted">Dữ liệu lưu trong trình duyệt này. Hãy <b>xuất file sao lưu</b> thường xuyên, và dùng file đó để chuyển sang máy khác.</p>
-    <div class="d-flex flex-wrap gap-2">
-      <button class="btn btn-primary" onclick="exportDB()"><i class="fas fa-download me-1"></i>Xuất JSON</button>
-      <label class="btn btn-success mb-0"><i class="fas fa-upload me-1"></i>Nhập JSON<input type="file" accept=".json" hidden onchange="importDB(this.files[0])"></label>
-      <button class="btn btn-outline-secondary" onclick="exportCSV()"><i class="fas fa-file-csv me-1"></i>Xuất vi phạm CSV</button>
-      <button class="btn btn-outline-danger" onclick="if(confirm('Xóa TOÀN BỘ dữ liệu?')){localStorage.removeItem(KEY);location.reload()}">Xóa hết</button>
-    </div></div>`;
-}
-function dl(name, text, type) {
-  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text], {type})); a.download = name; a.click();
-}
-const exportDB = () => dl('educlass-backup-' + today() + '.json', JSON.stringify(db, null, 1), 'application/json');
-function importDB(f) {
-  if (!f) return; const r = new FileReader();
-  r.onload = () => { try { const d = JSON.parse(r.result); if (!d.users || !d.students) throw 0; db = d; save(); alert('✅ Đã khôi phục!'); location.reload(); } catch (e) { alert('File không hợp lệ!'); } };
-  r.readAsText(f);
-}
-function exportCSV() {
-  const q = v => '"' + String(v ?? '').replace(/"/g, '""') + '"';
-  dl('vipham.csv', '\ufeffNgày,Mã,Họ tên,Lớp,Lỗi,Ghi chú\n' + db.discipline.map(d => [d.date, d.id, d.name, d.lop, d.type, d.note].map(q).join(',')).join('\n'), 'text/csv');
-}
-</script>
-</body>
-</html>
+function drawDash(){const c=$('dc').value,st=stOf(c),n=k=>st.filter(s=>s.hl===k).length,t=today(),ids=new Set(st.map(s=>s.id));
+ $('d1').innerText=st.length;$('d2').innerText=st.length?Math.round(n('Giỏi')/st.length*100)+'%':'0%';$('d3').innerText=D('discipline').filter(d=>!c||d.lop===c).length;
+ $('d4').innerText=D('attendance').filter(a=>a.date.slice(0,10)==t&&a.status=='V'&&(!c||ids.has(a.id))).length;
+ if(chart)chart.destroy();chart=new Chart($('ch'),{type:'doughnut',data:{labels:['Giỏi','Khá','TB'],datasets:[{data:[n('Giỏi'),n('Khá'),st.length-n('Giỏi')-n('Khá')],backgroundColor:['#198754','#0d6efd','#ffc107']}]},options:{maintainAspectRatio:false}})}
+function listAtt(){const c=$('ac').value,d=$('ad').value;$('agv').innerText=c?'GVCN: '+gvOf(c):'';
+ $('al').innerHTML=stOf(c).filter(s=>c).map(s=>{const r=D('attendance').find(a=>a.date==d&&a.id==s.id&&!a.tiet);return`<tr><td>${esc(s.name)}</td><td><select class="form-select form-select-sm w-auto" data-id="${esc(s.id)}"><option value="C">Có mặt</option><option value="V" ${r&&r.status=='V'?'selected':''}>Vắng</option></select></td></tr>`}).join('')}
+function saveAtt(){const d=$('ad').value;if(!$('ac').value)return alert('Chọn lớp!');
+ document.querySelectorAll('#al select').forEach(x=>{const s=D('students').find(z=>z.id==x.dataset.id);db.attendance=db.attendance.filter(a=>!(a.date==d&&a.id==s.id&&!a.tiet));db.attendance.push({date:d,id:s.id,name:s.name,lop:s.lop,status:x.value})});save();alert('✅ Đã lưu!')}
+function listMgr(){$('ml').innerHTML=stOf($('mc').value).filter(s=>$('mc').value).map(s=>{const i=db.students.indexOf(s),o=(k,a)=>`<select class="form-select form-select-sm w-auto" onchange="db.students[${i}].${k}=this.value;save()">${a.map(x=>`<option ${s[k]==x?'selected':''}>${x}</option>`).join('')}</select>`;
+ return`<tr><td>${esc(s.name)}</td><td>${o('hl',['Giỏi','Khá','TB'])}</td><td>${o('hk',['Tốt','Khá','TB','Yếu'])}</td></tr>`}).join('')}
+function bulk(){let n=0;$('bulk').value.split('\n').forEach(l=>{const[a,b,c]=l.split(/[,\t;]/).map(x=>x&&x.trim());if(a&&b&&c&&!D('students').some(s=>s.id==a)){db.students.push({id:a,name:b,lop:c,hl:'Khá',hk:'Tốt',bt:''});n++}});save();alert('Đã thêm '+n+' học sinh')}
+const inR=(d,s,e)=>{const x=d.date.slice(0,10);return x>=s&&x<=e};
+function drawGrid(){const s=$('gs').value,e=$('ge').value,g=$('gg').value,L=D('loi');
+ const R=classes().filter(c=>!g||c.startsWith(g)).map(l=>{let p=100;const cells=L.map(x=>{const n=D('discipline').filter(d=>d.lop==l&&d.type==x.name&&inR(d,s,e)).length;p-=n*x.pts;return`<td>${n||''}</td>`}).join('');return{p,h:`<tr><td class="fw-bold">${esc(l)}</td><td>${esc(gvOf(l))}</td>${cells}<td class="fw-bold text-danger">${p}</td></tr>`}}).sort((a,b)=>b.p-a.p);
+ $('gt').innerHTML=`<thead><tr><th>LỚP</th><th>GVCN</th>${L.map(x=>`<th title="${esc(x.name)} (-${x.pts})">${esc(x.code)}</th>`).join('')}<th>ĐIỂM</th></tr></thead><tbody>${R.map(r=>r.h).join('')}</tbody>`}
+function drawCvm(){const c=$('vc').value,s=$('vs').value,e=$('ve').value,L=D('loi');if(!c)return alert('Chọn lớp!');
+ $('vt').innerHTML=`<thead><tr><th>HỌC SINH</th>${L.map(x=>`<th title="${esc(x.name)}">${esc(x.code)}</th>`).join('')}<th>ĐIỂM TRỪ</th></tr></thead><tbody>${stOf(c).map(st=>{let p=0;const cells=L.map(x=>{const n=D('discipline').filter(d=>d.id==st.id&&d.type==x.name&&inR(d,s,e)).length;p+=n*x.pts;return`<td>${n||''}</td>`}).join('');return`<tr><td class="fw-bold">${esc(st.name)}</td>${cells}<td class="text-danger fw-bold">${p}</td></tr>`}).join('')}</tbody>`}
+function drawAttStat(){const s=$('as').value,e=$('ae').value;
+ $('ab').innerHTML=classes().map(l=>{const st=stOf(l),ids=new Set(st.map(x=>x.id)),V=D('attendance').filter(a=>ids.has(a.id)&&a.status=='V'&&inR(a,s,e)),names=[...new Set(V.map(a=>a.name))],vs=new Set(V.map(a=>a.id)),
+ late=new Set(D('discipline').filter(d=>d.lop==l&&/muộn/i.test(d.type)&&inR(d,s,e)).map(d=>d.id)).size;
+ return`<tr><td class="fw-bold">${esc(l)}</td><td>${esc(gvOf(l))}</td><td>${st.length}</td><td>${vs.size}</td><td>${late}</td><td>${st.length-vs.size}</td><td>${st.filter(x=>x.bt=='X'&&!vs.has(x.id)).length}</td><td class="text-start small">${esc(names.join(', '))}</td></tr>`}).join('')}
+function drawDstats(){const c=$('ds').value;$('dsb').innerHTML=stOf(c).filter(()=>c).map(s=>{const v=D('discipline').filter(d=>d.id==s.id),a=D('attendance').filter(x=>x.id==s.id&&x.status=='V').length,m={};v.forEach(d=>m[d.type]=(m[d.type]||0)+1);
+ return`<tr><td>${esc(s.name)}</td><td>${a}</td><td>${v.length}</td><td class="small">${esc(Object.entries(m).map(([k,n])=>k+' ('+n+')').join(', '))}</td></tr>`}).join('')}
+function drawBday(){const m=+$('bm').value;$('bb').innerHTML=D('students').filter(s=>s.dob&&+s.dob.slice(5,7)==m).sort((a,b)=>a.dob.slice(8)-b.dob.slice(8)).map(s=>`<tr><td>${s.dob.slice(8)}/${s.dob.slice(5,7)}</td><td>🎂 ${esc(s.name)}</td><td>${esc(s.lop)}</td></tr>`).join('')||'<tr><td colspan="3" class="text-muted text-center">Không có sinh nhật</td></tr>'}
+function printCert(){const w=window.open('');w.document.write(`<body style="text-align:center;font-family:serif;border:12px double #d4a017;padding:60px;margin:20px"><h1 style="color:#d4a017;font-size:60px">GIẤY KHEN</h1><p>Trường khen tặng em</p><h2 style="color:#0d6efd;font-size:44px">${esc($('cs').value)}</h2><p>Lớp ${esc($('cc').value)}</p><h3 style="color:#dc3545;font-size:34px">${esc($('ct').value)}</h3><p>Ngày ${new Date().toLocaleDateString('vi-VN')}</p><script>print()<\/script>`)}
+const TIMES=['7h15-8h00','8h05-8h50','9h25-10h10','10h15-11h00','11h05-11h50','13h30-14h15','14h20-15h05','15h25-16h10','16h15-17h00','17h05-17h50'];
+function drawTkb(){const g=db.tkb[$('tw').value]||{};$('tb').innerHTML=TIMES.map((t,i)=>`<tr><td>${i<5?'S':'C'}${i%5+1}</td><td class="small">${t}</td>${[0,1,2,3,4,5].map(j=>`<td><input class="form-control form-control-sm text-center tk" value="${esc((g[i]||[])[j]||'')}"></td>`).join('')}</tr>`).join('')}
+function saveTkb(){const g={};document.querySelectorAll('#tb tr').forEach((r,i)=>g[i]=[...r.querySelectorAll('.tk')].map(x=>x.value));db.tkb[$('tw').value]=g;save();alert('✅ Đã lưu TKB tuần '+$('tw').value)}
+function makeGroups(){const c=$('gc').value,n=+$('gn').value||2,S=shuffle(stOf(c)),G=Array.from({length:n},()=>[]);S.forEach((s,i)=>G[i%n].push(s.name));
+ $('gr').innerHTML=G.map((g,i)=>`<div class="col-md-3 col-6"><div class="${card} mb-0"><b class="text-primary">Nhóm ${i+1}</b><ol class="small mb-0 ps-3">${g.map(x=>`<li>${esc(x)}</li>`).join('')}</ol></div></div>`).join('')}
+let SELS=null;
+function seatList(){const c=$('sc').value;let a=db.seat[c];const S=stOf(c);if(!a||a.length!=S.length)a=db.seat[c]=S.map(s=>s.id);return a}
+function drawSeat(){if(!$('sc').value)return;const a=seatList();SELS=null;$('sg').innerHTML=a.map((id,i)=>`<div class="seat" id="st${i}" onclick="swapSeat(${i})">${esc((D('students').find(s=>s.id==id)||{}).name)}</div>`).join('')}
+function swapSeat(i){const a=seatList();if(SELS==null){SELS=i;$('st'+i).classList.add('sel')}else{[a[SELS],a[i]]=[a[i],a[SELS]];save();drawSeat()}}
+function shuffleSeat(){if(!$('sc').value)return;db.seat[$('sc').value]=shuffle(seatList());save();drawSeat()}
+function callSeat(){const a=seatList();if(!a.length)return;let n=0;const t=setInterval(()=>{document.querySelectorAll('.seat').forEach(x=>x.classList.remove('hit'));$('st'+(Math.random()*a.length|0)).classList.add('hit');if(++n>20){clearInterval(t)}},100)}
+function vPick(m){const ic={wheel:'🎡',ufo:'🛸',duck:'🦆'}[m];C(`<div class="${card} text-center"><div class="d-flex gap-2 justify-content-center mb-2">${sel('pc',clsOpts())}<button class="btn btn-primary btn-sm px-4" onclick="doPick('${ic}')">${ic} GỌI TÊN</button><button class="btn btn-light btn-sm" onclick="CALLED=[];$('pl').innerText=''">Đặt lại</button></div><div id="bigout" class="big">?</div><div class="small text-muted" id="pl"></div></div>`)}
+let CALLED=[];
+function doPick(ic){const c=$('pc').value;if(!c)return alert('Chọn lớp!');let p=stOf(c).filter(s=>!CALLED.includes(s.id));if(!p.length){CALLED=[];p=stOf(c)}
+ const w=p[Math.random()*p.length|0];spin(()=>ic+' '+p[Math.random()*p.length|0].name,()=>{CALLED.push(w.id);$('bigout').innerText=ic+' '+w.name;$('pl').innerText='Đã gọi: '+CALLED.length+'/'+stOf(c).length})}
+function spin(f,done){let n=0;const t=setInterval(()=>{$('bigout').innerText=f();if(++n>20){clearInterval(t);done&&done()}},90)}
+let TI,AC;function tick(){clearInterval(TI);TI=setInterval(()=>{if($('clk'))$('clk').innerText=new Date().toLocaleTimeString('vi-VN');else clearInterval(TI)},500)}
+function cd(){let s=(+$('tm').value||1)*60;clearInterval(TI);tick();const t=setInterval(()=>{if(!$('cdo'))return clearInterval(t);$('cdo').innerText=String(s/60|0).padStart(2,'0')+':'+String(s%60).padStart(2,'0');if(--s<0){clearInterval(t);ring(880,4)}},1000)}
+function ring(f,n,type='sine'){AC=AC||new AudioContext();for(let i=0;i<n;i++){const o=AC.createOscillator(),g=AC.createGain();o.type=type;o.frequency.value=f;o.connect(g);g.connect(AC.destination);const t=AC.currentTime+i*.6;g.gain.setValueAtTime(.6,t);g.gain.exponentialRampToValueAtTime(.001,t+.55);o.start(t);o.stop(t+.6)}}
+function drum(n){ring(110,n*2,'triangle')}
+function key(k){const i=$('ci');if(k=='C')i.value='';else if(k=='=')calc();else i.value+=k}
+function calc(){const i=$('ci');try{if(!/^[0-9+\-*/().% ]+$/.test(i.value))throw 0;i.value=+Function('return '+i.value)().toFixed(8)}catch(e){i.value='Lỗi'}}
+let TUG=0;function pull(d){TUG+=d;const p=50-TUG*10;$('tp').style.width=p+'%';$('tp').innerText=p+'%';if(Math.abs(TUG)>=5)$('tw2').innerText=TUG>0?'🏆 ĐỘI XANH THẮNG!':'🏆 ĐỘI ĐỎ THẮNG!'}
+let WW,WG,WL;function wstart(){WW=$('ww').value.toUpperCase();if(!WW)return;WG=[];WL=6;$('wh2').innerText='Gợi ý: '+$('wh').value;$('wset').classList.add('d-none');wdraw()}
+function wdraw(){const ok=[...WW].every(c=>c==' '||WG.includes(c));$('wd').innerText=[...WW].map(c=>c==' '?' ':WG.includes(c)?c:'_').join(' ');$('wl').innerText=ok?'🎉 ĐÚNG RỒI!':WL<=0?'💀 Hết lượt! Đáp án: '+WW:'Lượt còn lại: '+WL;
+ $('wk').innerHTML=ok||WL<=0?'<button class="btn btn-primary btn-sm mt-2" onclick="VIEWS.word()">Chơi lại</button>':[...'AÀÁẢÃẠĂẰẮẲẴẶÂẦẤẨẪẬBCDĐEÈÉẺẼẸÊỀẾỂỄỆFGHIÌÍỈĨỊJKLMNOÒÓỎÕỌÔỒỐỔỖỘƠỜỚỞỠỢPQRSTUÙÚỦŨỤƯỪỨỬỮỰVWXYỲÝỶỸỴZ0123456789'].map(k=>`<button class="btn btn-sm btn-outline-secondary m-1" ${WG.includes(k)?'disabled':''} onclick="wguess('${k}')">${k}</button>`).join('')}
+function wguess(k){WG.push(k);if(!WW.includes(k))WL--;wdraw()}
+function drawProfile(){const s=D('students').find(x=>x.id==$('pid').value);if(!s)return $('pf').innerHTML='<div class="text-danger">Không thấy mã HS</div>';
+ $('pf').innerHTML=`<div class="${card} bg-primary text-white"><h4>${esc(s.name)}</h4>Lớp ${esc(s.lop)} | ID ${esc(s.id)} | Học lực ${esc(s.hl)} | Hạnh kiểm ${esc(s.hk)}</div><div class="row g-3"><div class="col-md-6"><div class="${card}"><b>Điểm</b><table class="table table-sm mb-0">${D('scores').filter(x=>x.id==s.id).map(x=>`<tr><td>${esc(x.mon)}</td><td>${COMP.scores[1](x)}</td></tr>`).join('')}</table></div></div><div class="col-md-6"><div class="${card}"><b>Vi phạm</b>${D('discipline').filter(x=>x.id==s.id).map(x=>`<div class="small border-bottom py-1">${dtxt(x.date)} - ${esc(x.type)}</div>`).join('')}</div></div></div>`}
+/* ===== BÁO CÁO VI PHẠM (hôm nay / tổng hợp / tra cứu) ===== */
+function vRep(m){const t=today();C(`<div class="${card}"><div class="d-flex flex-wrap gap-2"><input type="date" id="rs" class="form-control form-control-sm w-auto" value="${t}"><input type="date" id="re" class="form-control form-control-sm w-auto" value="${t}">
+ ${m=='sum'?'':sel('rc',clsOpts(1))+sel('rt','<option value="">Mọi lỗi</option>'+D('loi').map(l=>`<option>${esc(l.name)}</option>`).join(''))+'<input id="rq" class="form-control form-control-sm w-auto" placeholder="Tên HS...">'}
+ <button class="btn btn-danger btn-sm px-4" onclick="runRep('${m}')">LỌC</button></div></div><div class="card table-responsive"><table class="table table-hover table-sm mb-0 small"><tbody id="rb"></tbody></table></div><div class="fw-bold text-danger mt-2" id="rtot"></div>`);runRep(m)}
+function runRep(m){const s=$('rs').value,e=$('re').value;
+ if(m=='sum'){$('rb').innerHTML='<tr class="table-light"><th>LỚP</th><th>GVCN</th><th>DANH SÁCH VI PHẠM</th></tr>'+classes().map(l=>{const v=D('discipline').filter(d=>d.lop==l&&inR(d,s,e));return`<tr><td class="fw-bold">${esc(l)}</td><td>${esc(gvOf(l))}</td><td>${v.map(d=>`<small class="text-muted">[${dtxt(d.date).slice(5)}]</small> <b>${esc(d.name)}</b> (${esc(d.type)})`).join('<br>')}</td></tr>`}).join('');return $('rtot').innerText=''}
+ const c=$('rc').value,t=$('rt').value,q=$('rq').value.toLowerCase(),v=D('discipline').filter(d=>inR(d,s,e)&&(!c||d.lop==c)&&(!t||d.type==t)&&(!q||String(d.name).toLowerCase().includes(q)));
+ $('rb').innerHTML='<tr class="table-light"><th>NGÀY GIỜ</th><th>LỚP</th><th>HỌ TÊN</th><th>VI PHẠM</th><th>GHI CHÚ</th></tr>'+v.map(d=>`<tr><td>${dtxt(d.date)}</td><td>${esc(d.lop)}</td><td>${esc(d.name)}</td><td>${esc(d.type)}</td><td>${esc(d.note)}</td></tr>`).join('');$('rtot').innerText='Tổng số vụ: '+v.length}
+/* ===== XU HƯỚNG ===== */
+function vTrend(m){C(`<div class="${card}">${m=='all'?sel('tcl',clsOpts(1),'drawTrend(\''+m+'\')'):''}<div style="height:420px"><canvas id="tc"></canvas></div></div>`);drawTrend(m)}
+function drawTrend(m){const V=D('discipline'),mo=[...new Set(V.map(d=>d.date.slice(0,7)))].sort(),cnt=f=>mo.map(x=>V.filter(d=>d.date.slice(0,7)==x&&f(d)).length),cl=$('tcl')?$('tcl').value:'';
+ const col=['#dc3545','#fd7e14','#ffc107','#198754','#0dcaf0','#0d6efd','#6610f2','#d63384'];
+ const ds=m=='all'?[{type:'bar',label:'Toàn trường',data:cnt(()=>1),backgroundColor:'#9ec5fe'},{type:'line',label:cl||'(chọn lớp)',data:cl?cnt(d=>d.lop==cl):[],borderColor:'#dc3545'}]:D('loi').map((l,i)=>({type:'line',label:l.name,data:cnt(d=>d.type==l.name),borderColor:col[i%8],tension:.3}));
+ if(chart)chart.destroy();chart=new Chart($('tc'),{data:{labels:mo,datasets:ds},options:{maintainAspectRatio:false}})}
+const VIEW_KEYS=0;
+</script></body></html>
