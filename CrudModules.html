@@ -1,0 +1,81 @@
+<script>
+// Tự tạo các menu còn thiếu: dạng bảng ghi chép (thêm/xóa) lưu vào sheet M_*
+(function () {
+  var M = {}, made = {};
+  ['health_2627;Sức khỏe và Y tế;M_YTE;Ngày|Lớp|Học sinh|Triệu chứng|Xử lý',
+   'medical_check_2627;Chuyển xuống Y tế;M_CHUYENYTE;Ngày|Lớp|Học sinh|Lý do|Ghi chú',
+   'sll_2627;Sổ liên lạc;M_SLL;Ngày|Lớp|Học sinh|Nội dung|Phản hồi phụ huynh',
+   'team_tasks_2627;Thông báo việc tổ;M_VIECTO;Ngày|Nội dung|Người phụ trách|Hạn|Trạng thái',
+   'computer_lab_2627;Thiết bị phòng máy;M_PHONGMAY;Ngày|Phòng|Máy số|Tình trạng|Ghi chú',
+   'bonus_points_2627;Cộng điểm học sinh;M_CONGDIEM;Ngày|Lớp|Học sinh|Điểm cộng|Lý do',
+   'facility_inspection_2627;Kiểm tra phòng CSVC;M_KIEMTRA;Ngày|Phòng|Nội dung|Kết quả|Người kiểm tra',
+   'late_pass_2627;Giấy học sinh vào lớp;M_VAOLOP;Ngày|Giờ|Lớp|Học sinh|Lý do|Người cấp',
+   'clerical_documents_2627;Quản lý văn bản;M_VANBAN;Ngày|Số hiệu|Trích yếu|Nơi gửi/nhận|Ghi chú',
+   'equipment_loan_2627;Mượn trả thiết bị;M_MUONTB;Ngày mượn|Thiết bị|Người mượn|Ngày trả|Tình trạng',
+   'library_management_2627;Thư viện trường;M_THUVIEN;Ngày mượn|Tên sách|Người mượn|Ngày trả|Trạng thái',
+   'it_registrar_2627;IT và Giáo vụ;M_ITGV;Ngày|Nội dung|Người yêu cầu|Trạng thái|Ghi chú',
+   'class_tuition_2627;Học phí lớp chủ nhiệm;M_HOCPHI;Học sinh|Khoản thu|Số tiền|Đã nộp|Ngày nộp',
+   'homework_portal_2627;Sổ báo bài;M_BAOBAI;Ngày|Lớp|Môn|Nội dung bài tập|Hạn nộp',
+   'security_gate_2627;Nhật ký bảo vệ;M_BAOVE;Ngày|Giờ|Đối tượng|Nội dung|Ghi chú',
+   'boarding_kitchen_2627;Suất ăn bán trú;M_BANTRU;Ngày|Lớp|Số suất|Ghi chú',
+   'noise_monitor_2627;Cảnh báo ồn;M_ON;Ngày|Giờ|Khu vực|Mức ồn|Xử lý',
+   'homeroom_book_2627;Sổ chủ nhiệm 2627;M_SCN2627;Ngày|Lớp|Nội dung|Biện pháp|Trạng thái',
+   'parent_meeting_2627;Họp phụ huynh;M_HOPPH;Ngày|Lớp|Nội dung|Địa điểm|Ghi chú',
+   'class_clean_2627;Bảng trực nhật;M_TRUCNHAT;Ngày|Lớp|Khu vực|Tổ|Kết quả',
+   'quy_lop_moi_2627;Quỹ lớp 2627;M_QUYLOP2627;Ngày|Lớp|Nội dung|Loại|Số tiền',
+   'pe_fitness_2627;Thể chất và sức khỏe;M_THECHAT;Ngày|Lớp|Học sinh|Chiều cao|Cân nặng',
+   'meeting_notebook_2627;Sổ tay họp tổ;M_HOPTO;Ngày|Nội dung họp|Kết luận|Người ghi',
+   'principal_radar_2627;Nhật ký điều hành hiệu trưởng;M_DIEUHANH;Ngày|Nội dung chỉ đạo|Người thực hiện|Tình trạng',
+   'class_duty;Ban cán sự lớp;M_BANCANSU;Lớp|Chức vụ|Học sinh|Ghi chú',
+   'duty_schedule;Trực nhật và giao việc;M_GIAOVIEC;Ngày|Lớp|Tổ|Công việc',
+   'group_emulation;Thi đua các tổ;M_THIDUATO;Ngày|Lớp|Tổ|Điểm|Ghi chú'
+  ].forEach(function (l) { var p = l.split(';'); M[p[0]] = { title: p[1], sheet: p[2], f: p[3].split('|') }; });
+
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function type(f) { return /^Ngày/.test(f) ? 'date' : /^Giờ/.test(f) ? 'time' : /^(Số tiền|Số suất|Điểm|Chiều cao|Cân nặng)/.test(f) ? 'number' : 'text'; }
+
+  function ensureTab(id) {
+    if (document.getElementById('tab-' + id)) return;
+    var d = document.createElement('div'); d.id = 'tab-' + id; d.className = 'content-tab d-none';
+    if (M[id]) made[id] = 1; else d.innerHTML = '<div class="alert alert-info">Chức năng này đang được hoàn thiện.</div>';
+    document.getElementById('tab-dashboard').parentNode.appendChild(d);
+  }
+  function load(id) {
+    var m = M[id], tb = document.getElementById('tab-' + id).querySelector('[data-body]');
+    google.script.run.withSuccessHandler(function (rows) {
+      tb.innerHTML = (rows || []).slice().reverse().map(function (r) {
+        return '<tr>' + r.cells.map(function (c) { return '<td>' + esc(c) + '</td>'; }).join('') +
+          '<td><button class="btn btn-sm text-danger" data-del="' + r.row + '"><i class="fas fa-trash"></i></button></td></tr>';
+      }).join('') || '<tr><td colspan="' + (m.f.length + 1) + '" class="text-center p-4 text-muted">Chưa có dữ liệu.</td></tr>';
+    }).withFailureHandler(function (e) { tb.innerHTML = '<tr><td colspan="9" class="text-danger p-3">Lỗi: ' + esc(e.message) + '</td></tr>'; })
+      .crudList(m.sheet, m.f);
+  }
+  function render(id) {
+    if (!made[id]) return;
+    var m = M[id], box = document.getElementById('tab-' + id);
+    box.innerHTML = '<div class="card border-0 shadow-sm rounded-4 p-4 mb-3 bg-white"><h6 class="fw-bold text-primary mb-3">' + m.title + '</h6><div class="row g-2 align-items-end">' +
+      m.f.map(function (f, i) { return '<div class="col-md-3 col-6"><label class="small fw-bold">' + f + '</label><input class="form-control form-control-sm" data-i="' + i + '" type="' + type(f) + '"></div>'; }).join('') +
+      '<div class="col-md-2 col-6"><button class="btn btn-primary btn-sm w-100 fw-bold" data-act="add">LƯU</button></div></div></div>' +
+      '<div class="card border-0 shadow-sm rounded-4 bg-white"><div class="table-responsive"><table class="table table-hover small mb-0"><thead class="table-light"><tr>' +
+      m.f.map(function (f) { return '<th>' + f + '</th>'; }).join('') + '<th></th></tr></thead><tbody data-body><tr><td class="p-4 text-center">Đang tải...</td></tr></tbody></table></div></div>';
+    box.onclick = function (ev) {
+      var b = ev.target.closest('button'); if (!b) return;
+      if (b.dataset.act === 'add') {
+        var cells = [].map.call(box.querySelectorAll('input[data-i]'), function (i) { return i.value.trim(); });
+        if (!cells.some(Boolean)) return alert('Hãy nhập thông tin!');
+        b.disabled = true;
+        google.script.run.withSuccessHandler(function () { render(id); }).crudAdd(m.sheet, m.f, cells);
+      } else if (b.dataset.del && confirm('Xóa dòng này?')) {
+        google.script.run.withSuccessHandler(function () { load(id); }).crudDelete(m.sheet, m.f, +b.dataset.del);
+      }
+    };
+    load(id);
+  }
+  var orig = window.switchTab;
+  window.switchTab = function (id, el) {
+    ensureTab(id);
+    try { orig(id, el); } catch (e) { console.warn('switchTab', id, e); }
+    render(id);
+  };
+})();
+</script>
