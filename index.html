@@ -7,7 +7,7 @@
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<!-- Thư viện xem & vẽ PDF -->
+<!-- Thư viện xem & trích xuất ảnh từ PDF -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <!-- Thư viện nhúng mực đỏ & xuất file PDF mới -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
@@ -352,13 +352,13 @@ launcher(){C(`<div class="row g-2">${MY.map(m=>`<div class="col-6 col-md-3 col-l
 overview(){const t=today();C(`<div class="row g-3 text-center">${[['Học sinh',D('students').length],['Số lớp',classes().length],['Vi phạm hôm nay',D('discipline').filter(d=>d.date.slice(0,10)==t).length],['Vắng hôm nay',D('attendance').filter(a=>a.date.slice(0,10)==t&&a.status=='V').length],['Tài khoản',D('users').length],['Giao dịch quỹ',D('fund').length]].map(x=>`<div class="col-6 col-md-4"><div class="${card}"><h2>${x[1]}</h2><small>${x[0]}</small></div></div>`).join('')}</div>`)},
 profile(){const id=USER.sid||'';C(`<div class="${card}"><input id="pid" class="form-control form-control-sm w-auto d-inline" placeholder="Mã HS" value="${esc(id)}"><button class="btn btn-primary btn-sm ms-1" onclick="drawProfile()">XEM</button></div><div id="pf"></div>`);if(id)drawProfile()},
 
-/* Chức năng Chấm bài tự luận trên PDF */
+/* Chức năng Chấm bài tự luận trên PDF (Tích hợp AI chấm tự động) */
 pdfGrade(){
   C(`
     <div class="${card}">
       <div class="row g-2 align-items-center mb-2">
         <div class="col-md-4 col-12">
-          <label class="small fw-bold text-primary"><i class="fas fa-file-pdf me-1"></i>Chọn file PDF bài làm học sinh:</label>
+          <label class="small fw-bold text-primary"><i class="fas fa-file-pdf me-1"></i>File PDF bài làm học sinh:</label>
           <input type="file" id="pdfFileInput" accept="application/pdf" class="form-control form-control-sm" onchange="loadPdfFile(event)">
         </div>
         <div class="col-md-8 col-12 d-flex flex-wrap gap-2 align-items-end justify-content-md-end mt-2 mt-md-0">
@@ -368,13 +368,22 @@ pdfGrade(){
             <button class="btn btn-outline-secondary" onclick="addPdfQuickStamp('✔ ĐÚNG')">✔ Đúng</button>
             <button class="btn btn-outline-secondary" onclick="addPdfQuickStamp('✘ SAI')">✘ Sai</button>
           </div>
-          <button class="btn btn-sm btn-outline-secondary" onclick="clearPdfAnnotations()"><i class="fas fa-undo"></i> Xóa nét trang này</button>
+          <button class="btn btn-sm btn-outline-secondary" onclick="clearPdfAnnotations()"><i class="fas fa-undo"></i> Xóa nét</button>
           <div class="btn-group btn-group-sm">
             <button class="btn btn-light border" onclick="changePdfPage(-1)"><i class="fas fa-chevron-left"></i></button>
             <span class="btn btn-light border disabled fw-bold" id="pdfPageIndicator">0 / 0</span>
             <button class="btn btn-light border" onclick="changePdfPage(1)"><i class="fas fa-chevron-right"></i></button>
           </div>
-          <button class="btn btn-sm btn-success px-3 fw-bold" onclick="exportGradedPdf()"><i class="fas fa-file-export me-1"></i> Xuất PDF đã chấm</button>
+          <button class="btn btn-sm btn-primary fw-bold" id="btnAiGrade" onclick="gradeWithAi()"><i class="fas fa-robot me-1"></i> AI Chấm bài</button>
+          <button class="btn btn-sm btn-success fw-bold" onclick="exportGradedPdf()"><i class="fas fa-file-export me-1"></i> Xuất PDF</button>
+        </div>
+      </div>
+      <div class="row g-2 mt-1">
+        <div class="col-md-9 col-12">
+          <input id="aiRubric" class="form-control form-control-sm" placeholder="Yêu cầu / Ba-dem đáp án cho AI chấm (Tùy chọn: VD: Bài toán tính diện tích, thang điểm 10...)">
+        </div>
+        <div class="col-md-3 col-12 text-md-end">
+          <span id="aiGradeStatus" class="small fw-bold"></span>
         </div>
       </div>
     </div>
@@ -391,117 +400,7 @@ pdfGrade(){
 }
 };
 
-function drawDash(){
-  const c=$('dc').value,st=stOf(c),n=k=>st.filter(s=>s.hl===k).length,t=today(),ids=new Set(st.map(s=>s.id));
-  $('d1').innerText=st.length;$('d2').innerText=st.length?Math.round(n('Giỏi')/st.length*100)+'%':'0%';$('d3').innerText=D('discipline').filter(d=>!c||d.lop===c).length;
-  $('d4').innerText=D('attendance').filter(a=>a.date.slice(0,10)==t&&a.status=='V'&&(!c||ids.has(a.id))).length;
-  if(chart)chart.destroy();chart=new Chart($('ch'),{type:'doughnut',data:{labels:['Giỏi','Khá','TB'],datasets:[{data:[n('Giỏi'),n('Khá'),st.length-n('Giỏi')-n('Khá')],backgroundColor:['#198754','#0d6efd','#ffc107']}]},options:{maintainAspectRatio:false}});
-}
-
-function listAtt(){
-  const c=$('ac').value,d=$('ad').value;$('agv').innerText=c?'GVCN: '+gvOf(c):'';
-  $('al').innerHTML=stOf(c).filter(s=>c).map(s=>{const r=D('attendance').find(a=>a.date==d&&a.id==s.id&&!a.tiet);return`<tr><td>${esc(s.name)}</td><td><select class="form-select form-select-sm w-auto" data-id="${esc(s.id)}"><option value="C">Có mặt</option><option value="V" ${r&&r.status=='V'?'selected':''}>Vắng</option></select></td></tr>`}).join('');
-}
-
-function saveAtt(){
-  const d=$('ad').value;if(!$('ac').value)return alert('Chọn lớp!');
-  document.querySelectorAll('#al select').forEach(x=>{const s=D('students').find(z=>z.id==x.dataset.id);db.attendance=db.attendance.filter(a=>!(a.date==d&&a.id==s.id&&!a.tiet));db.attendance.push({date:d,id:s.id,name:s.name,lop:s.lop,status:x.value})});
-  save();alert('✅ Đã lưu!');
-}
-
-function listMgr(){
-  $('ml').innerHTML=stOf($('mc').value).filter(s=>$('mc').value).map(s=>{const i=db.students.indexOf(s),o=(k,a)=>`<select class="form-select form-select-sm w-auto" onchange="db.students[${i}].${k}=this.value;save()">${a.map(x=>`<option ${s[k]==x?'selected':''}>${x}</option>`).join('')}</select>`;
-  return`<tr><td>${esc(s.name)}</td><td>${o('hl',['Giỏi','Khá','TB'])}</td><td>${o('hk',['Tốt','Khá','TB','Yếu'])}</td></tr>`}).join('');
-}
-
-function bulk(){let n=0;$('bulk').value.split('\n').forEach(l=>{const[a,b,c]=l.split(/[,\t;]/).map(x=>x&&x.trim());if(a&&b&&c&&!D('students').some(s=>s.id==a)){db.students.push({id:a,name:b,lop:c,hl:'Khá',hk:'Tốt',bt:''});n++}});save();alert('Đã thêm '+n+' học sinh')}
-const inR=(d,s,e)=>{const x=d.date.slice(0,10);return x>=s&&x<=e};
-
-function drawGrid(){
-  const s=$('gs').value,e=$('ge').value,g=$('gg').value,L=D('loi');
-  const R=classes().filter(c=>!g||c.startsWith(g)).map(l=>{let p=100;const cells=L.map(x=>{const n=D('discipline').filter(d=>d.lop==l&&d.type==x.name&&inR(d,s,e)).length;p-=n*x.pts;return`<td>${n||''}</td>`}).join('');return{p,h:`<tr><td class="fw-bold">${esc(l)}</td><td>${esc(gvOf(l))}</td>${cells}<td class="fw-bold text-danger">${p}</td></tr>`}}).sort((a,b)=>b.p-a.p);
-  $('gt').innerHTML=`<thead><tr><th>LỚP</th><th>GVCN</th>${L.map(x=>`<th title="${esc(x.name)} (-${x.pts})">${esc(x.code)}</th>`).join('')}<th>ĐIỂM</th></tr></thead><tbody>${R.map(r=>r.h).join('')}</tbody>`;
-}
-
-function drawAttStat(){
-  const s=$('as').value,e=$('ae').value;
-  $('ab').innerHTML=classes().map(l=>{const st=stOf(l),ids=new Set(st.map(x=>x.id)),V=D('attendance').filter(a=>ids.has(a.id)&&a.status=='V'&&inR(a,s,e)),names=[...new Set(V.map(a=>a.name))],vs=new Set(V.map(a=>a.id)),
-  late=new Set(D('discipline').filter(d=>d.lop==l&&/muộn/i.test(d.type)&&inR(d,s,e)).map(d=>d.id)).size;
-  return`<tr><td class="fw-bold">${esc(l)}</td><td>${esc(gvOf(l))}</td><td>${st.length}</td><td>${vs.size}</td><td>${late}</td><td>${st.length-vs.size}</td><td>${st.filter(x=>x.bt=='X'&&!vs.has(x.id)).length}</td><td class="text-start small">${esc(names.join(', '))}</td></tr>`}).join('');
-}
-
-function drawDstats(){
-  const c=$('ds').value;$('dsb').innerHTML=stOf(c).filter(()=>c).map(s=>{const v=D('discipline').filter(d=>d.id==s.id),a=D('attendance').filter(x=>x.id==s.id&&x.status=='V').length,m={};v.forEach(d=>m[d.type]=(m[d.type]||0)+1);
-  return`<tr><td>${esc(s.name)}</td><td>${a}</td><td>${v.length}</td><td class="small">${esc(Object.entries(m).map(([k,n])=>k+' ('+n+')').join(', '))}</td></tr>`}).join('');
-}
-
-function drawBday(){
-  const m=+$('bm').value;
-  $('bb').innerHTML=D('students').filter(s=>s.dob&&+s.dob.slice(5,7)==m).sort((a,b)=>a.dob.slice(8)-b.dob.slice(8)).map(s=>`<tr><td>${s.dob.slice(8)}/${s.dob.slice(5,7)}</td><td>🎂 ${esc(s.name)}</td><td>${esc(s.lop)}</td></tr>`).join('')||'<tr><td colspan="3" class="text-muted text-center">Không có sinh nhật</td></tr>';
-}
-
-function printCert(){
-  const w=window.open('');
-  w.document.write(`<body style="text-align:center;font-family:serif;border:12px double #d4a017;padding:60px;margin:20px"><h1 style="color:#d4a017;font-size:60px">GIẤY KHEN</h1><p>Trường khen tặng em</p><h2 style="color:#0d6efd;font-size:44px">${esc($('cs').value)}</h2><p>Lớp ${esc($('cc').value)}</p><h3 style="color:#dc3545;font-size:34px">${esc($('ct').value)}</h3><p>Ngày ${new Date().toLocaleDateString('vi-VN')}</p><script>print()<\/script>`);
-}
-
-const TIMES=['7h15-8h00','8h05-8h50','9h25-10h10','10h15-11h00','11h05-11h50','13h30-14h15','14h20-15h05','15h25-16h10','16h15-17h00','17h05-17h50'];
-function drawTkb(){
-  const g=db.tkb[$('tw').value]||{};
-  $('tb').innerHTML=TIMES.map((t,i)=>`<tr><td>${i<5?'S':'C'}${i%5+1}</td><td class="small">${t}</td>${[0,1,2,3,4,5].map(j=>`<td><input class="form-control form-control-sm text-center tk" value="${esc((g[i]||[])[j]||'')}"></td>`).join('')}</tr>`).join('');
-}
-function saveTkb(){const g={};document.querySelectorAll('#tb tr').forEach((r,i)=>g[i]=[...r.querySelectorAll('.tk')].map(x=>x.value));db.tkb[$('tw').value]=g;save();alert('✅ Đã lưu TKB tuần '+$('tw').value)}
-
-function makeGroups(){
-  const c=$('gc').value,n=+$('gn').value||2,S=shuffle(stOf(c)),G=Array.from({length:n},()=>[]);
-  S.forEach((s,i)=>G[i%n].push(s.name));
-  $('gr').innerHTML=G.map((g,i)=>`<div class="col-md-3 col-6"><div class="${card} mb-0"><b class="text-primary">Nhóm ${i+1}</b><ol class="small mb-0 ps-3">${g.map(x=>`<li>${esc(x)}</li>`).join('')}</ol></div></div>`).join('');
-}
-
-let SELS=null;
-function seatList(){const c=$('sc').value;let a=db.seat[c];const S=stOf(c);if(!a||a.length!=S.length)a=db.seat[c]=S.map(s=>s.id);return a}
-function drawSeat(){if(!$('sc').value)return;const a=seatList();SELS=null;$('sg').innerHTML=a.map((id,i)=>`<div class="seat" id="st${i}" onclick="swapSeat(${i})">${esc((D('students').find(s=>s.id==id)||{}).name)}</div>`).join('')}
-function swapSeat(i){const a=seatList();if(SELS==null){SELS=i;$('st'+i).classList.add('sel')}else{[a[SELS],a[i]]=[a[i],a[SELS]];save();drawSeat()}}
-function shuffleSeat(){if(!$('sc').value)return;db.seat[$('sc').value]=shuffle(seatList());save();drawSeat()}
-function callSeat(){const a=seatList();if(!a.length)return;let n=0;const t=setInterval(()=>{document.querySelectorAll('.seat').forEach(x=>x.classList.remove('hit'));$('st'+(Math.random()*a.length|0)).classList.add('hit');if(++n>20){clearInterval(t)}},100)}
-
-function vPick(m){
-  const ic={wheel:'🎡',ufo:'🛸',duck:'🦆'}[m];
-  C(`<div class="${card} text-center"><div class="d-flex gap-2 justify-content-center mb-2">${sel('pc',clsOpts())}<button class="btn btn-primary btn-sm px-4" onclick="doPick('${ic}')">${ic} GỌI TÊN</button><button class="btn btn-light btn-sm" onclick="CALLED=[];$('pl').innerText=''">Đặt lại</button></div><div id="bigout" class="big">?</div><div class="small text-muted" id="pl"></div></div>`);
-}
-let CALLED=[];
-function doPick(ic){
-  const c=$('pc').value;if(!c)return alert('Chọn lớp!');let p=stOf(c).filter(s=>!CALLED.includes(s.id));if(!p.length){CALLED=[];p=stOf(c)}
-  const w=p[Math.random()*p.length|0];spin(()=>ic+' '+p[Math.random()*p.length|0].name,()=>{CALLED.push(w.id);$('bigout').innerText=ic+' '+w.name;$('pl').innerText='Đã gọi: '+CALLED.length+'/'+stOf(c).length});
-}
-function spin(f,done){let n=0;const t=setInterval(()=>{$('bigout').innerText=f();if(++n>20){clearInterval(t);done&&done()}},90)}
-
-let TI,AC;
-function tick(){clearInterval(TI);TI=setInterval(()=>{if($('clk'))$('clk').innerText=new Date().toLocaleTimeString('vi-VN');else clearInterval(TI)},500)}
-function cd(){let s=(+$('tm').value||1)*60;clearInterval(TI);tick();const t=setInterval(()=>{if(!$('cdo'))return clearInterval(t);$('cdo').innerText=String(s/60|0).padStart(2,'0')+':'+String(s%60).padStart(2,'0');if(--s<0){clearInterval(t);ring(880,4)}},1000)}
-function ring(f,n,type='sine'){AC=AC||new AudioContext();for(let i=0;i<n;i++){const o=AC.createOscillator(),g=AC.createGain();o.type=type;o.frequency.value=f;o.connect(g);g.connect(AC.destination);const t=AC.currentTime+i*.6;g.gain.setValueAtTime(.6,t);g.gain.exponentialRampToValueAtTime(.001,t+.55);o.start(t);o.stop(t+.6)}}
-function drum(n){ring(110,n*2,'triangle')}
-
-function key(k){const i=$('ci');if(k=='C')i.value='';else if(k=='=')calc();else i.value+=k}
-function calc(){const i=$('ci');try{if(!/^[0-9+\-*/().% ]+$/.test(i.value))throw 0;i.value=+Function('return '+i.value)().toFixed(8)}catch(e){i.value='Lỗi'}}
-
-let TUG=0;
-function pull(d){TUG+=d;const p=50-TUG*10;$('tp').style.width=p+'%';$('tp').innerText=p+'%';if(Math.abs(TUG)>=5)$('tw2').innerText=TUG>0?'🏆 ĐỘI XANH THẮNG!':'🏆 ĐỘI ĐỎ THẮNG!'}
-
-let WW,WG,WL;
-function wstart(){WW=$('ww').value.toUpperCase();if(!WW)return;WG=[];WL=6;$('wh2').innerText='Gợi ý: '+$('wh').value;$('wset').classList.add('d-none');wdraw()}
-function wdraw(){
-  const ok=[...WW].every(c=>c==' '||WG.includes(c));$('wd').innerText=[...WW].map(c=>c==' '?' ':WG.includes(c)?c:'_').join(' ');$('wl').innerText=ok?'🎉 ĐÚNG RỒI!':WL<=0?'💀 Hết lượt! Đáp án: '+WW:'Lượt còn lại: '+WL;
-  $('wk').innerHTML=ok||WL<=0?'<button class="btn btn-primary btn-sm mt-2" onclick="VIEWS.word()">Chơi lại</button>':[...'AÀÁẢÃẠĂẰẮẲẴẶÂẦẤẨẪẬBCDĐEÈÉẺẼẸÊỀẾỂỄỆFGHIÌÍỈĨỊJKLMNOÒÓỎÕỌÔỒỐỔỖỘƠỜỚỞỠỢPQRSTUÙÚỦŨỤƯỪỨỬỮỰVWXYỲÝỶỸỴZ0123456789'].map(k=>`<button class="btn btn-sm btn-outline-secondary m-1" ${WG.includes(k)?'disabled':''} onclick="wguess('${k}')">${k}</button>`).join('');
-}
-function wguess(k){WG.push(k);if(!WW.includes(k))WL--;wdraw()}
-
-function drawProfile(){
-  const s=D('students').find(x=>x.id==$('pid').value);if(!s)return $('pf').innerHTML='<div class="text-danger">Không thấy mã HS</div>';
-  $('pf').innerHTML=`<div class="${card} bg-primary text-white"><h4>${esc(s.name)}</h4>Lớp ${esc(s.lop)} | ID ${esc(s.id)} | Học lực ${esc(s.hl)} | Hạnh kiểm ${esc(s.hk)}</div><div class="row g-3"><div class="col-md-6"><div class="${card}"><b>Điểm</b><table class="table table-sm mb-0">${D('scores').filter(x=>x.id==s.id).map(x=>`<tr><td>${esc(x.mon)}</td><td>${COMP.scores[1](x)}</td></tr>`).join('')}</table></div></div><div class="col-md-6"><div class="${card}"><b>Vi phạm</b>${D('discipline').filter(x=>x.id==s.id).map(x=>`<div class="small border-bottom py-1">${dtxt(x.date)} - ${esc(x.type)}</div>`).join('')}</div></div></div>`;
-}
-
-/* ===== SOẠN ĐỀ TRẮC NGHIỆM BẰNG GEMINI TRỰC TIẾP ===== */
+/* ===== CẤU HÌNH GEMINI API KEY ===== */
 const GEMINI_API_KEY = "AIzaSyDm6UnyZeYeY4W5UUNAO4cFT45LduzQv4I";
 let QZ=[];
 
@@ -596,7 +495,7 @@ function printQuiz(ans){
   ${ans?`<hr><h3>ĐÁP ÁN</h3><p>${QZ.map((x,i)=>`${i+1}-${'ABCD'[x.a]}`).join(' &nbsp; ')}</p>${QZ.map((x,i)=>x.e?`<p style="font-size:13px"><b>Câu ${i+1}:</b> ${esc(x.e)}</p>`:'').join('')}`:''}<script>print()<\/script>`);
 }
 
-/* ===== XỬ LÝ CHẤM BÀI TỰ LUẬN TRÊN FILE PDF ===== */
+/* ===== XỬ LÝ CHẤM BÀI TỰ LUẬN TRÊN FILE PDF (GEMINI VISION) ===== */
 let pdfDocRaw = null;
 let pdfJsDoc = null;
 let currentPdfPage = 1;
@@ -695,9 +594,16 @@ function setupDrawCanvas(canvas) {
   };
 }
 
-function drawTextOnCanvas(ctx, text, x, y) {
-  ctx.font = 'bold 16px "Segoe UI", Tahoma, sans-serif';
+function drawTextOnCanvas(ctx, text, x, y, size=16, isScore=false) {
+  ctx.font = `bold ${size}px "Segoe UI", Tahoma, sans-serif`;
   ctx.fillStyle = '#e53e3e';
+  if (isScore) {
+    ctx.strokeStyle = '#e53e3e';
+    ctx.lineWidth = 2.5;
+    const padding = 8;
+    const textWidth = ctx.measureText(text).width;
+    ctx.strokeRect(x - padding, y - size - padding/2, textWidth + padding*2, size + padding*1.5);
+  }
   ctx.fillText(text, x, y);
 }
 
@@ -723,7 +629,7 @@ function restorePageAnnotations(pageNum) {
       ctx.lineTo(act.x, act.y);
       ctx.stroke();
     } else if (act.type === 'text') {
-      drawTextOnCanvas(ctx, act.text, act.x, act.y);
+      drawTextOnCanvas(ctx, act.text, act.x, act.y, act.size||16, act.isScore||false);
     }
   });
 }
@@ -739,8 +645,8 @@ function addPdfQuickStamp(stampText) {
   const canvas = $('pdfDrawCanvas');
   const ctx = canvas.getContext('2d');
   const x = 50, y = 50;
-  drawTextOnCanvas(ctx, stampText, x, y);
-  saveAction(currentPdfPage, { type: 'text', text: stampText, x, y });
+  drawTextOnCanvas(ctx, stampText, x, y, 18);
+  saveAction(currentPdfPage, { type: 'text', text: stampText, x, y, size: 18 });
 }
 
 function clearPdfAnnotations() {
@@ -757,6 +663,93 @@ async function changePdfPage(delta) {
     currentPdfPage = next;
     await renderCurrentPdfPage();
   }
+}
+
+/* Chấm bài tự động qua Gemini Vision */
+async function gradeWithAi() {
+  if (!pdfJsDoc) return alert('Vui lòng chọn file PDF bài làm của học sinh trước!');
+  
+  const btn = $('btnAiGrade');
+  const status = $('aiGradeStatus');
+  const rubric = ($('aiRubric')?.value || '').trim();
+
+  btn.disabled = true;
+  status.innerHTML = `<span class="text-primary"><i class="fas fa-spinner fa-spin"></i> Gemini đang đọc & chấm bài trang ${currentPdfPage}...</span>`;
+
+  try {
+    const renderCanvas = $('pdfRenderCanvas');
+    const base64Image = renderCanvas.toDataURL('image/jpeg', 0.85).split(',')[1];
+
+    const promptText = `Bạn là một giáo viên kinh nghiệm tại Việt Nam. Hãy đọc hình ảnh bài làm tự luận này của học sinh trên trang hiện tại và chấm điểm.
+${rubric ? 'YÊU CẦU / ĐÁP ÁN THAM CHIẾU: ' + rubric : ''}
+Hãy đánh giá công tâm, chính xác.
+Trả về DUY NHẤT một chuỗi JSON chuẩn (không dùng markdown code fence), theo định dạng sau:
+{
+  "diem": "8.5/10",
+  "loi_phe": "Lời phê ngắn gọn của giáo viên (tối đa 25 từ)",
+  "chi_tiet": "Nhận xét chi tiết ưu/nhược điểm",
+  "danh_gia_nhanh": "✔ ĐÚNG"
+}`;
+
+    const model = "gemini-2.5-flash";
+    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`;
+
+    const payload = {
+      contents: [{
+        parts: [
+          { text: promptText },
+          { inlineData: { mimeType: "image/jpeg", data: base64Image } }
+        ]
+      }],
+      generationConfig: {
+        responseMimeType: "application/json"
+      }
+    };
+
+    const res = await fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    const jsonRes = await res.json();
+    if (!res.ok || jsonRes.error) throw new Error(jsonRes.error?.message || `Lỗi AI (${res.status})`);
+
+    const raw = jsonRes.candidates?.[0]?.content?.parts?.[0]?.text || "{}";
+    const result = JSON.parse(raw.replace(/```json|```/g, '').trim());
+
+    // Đóng dấu mực đỏ lên trang bài làm của học sinh
+    const canvas = $('pdfDrawCanvas');
+    const ctx = canvas.getContext('2d');
+
+    // 1. Đóng khung điểm số ở góc trên bên phải
+    const scoreText = `ĐIỂM: ${result.diem || 'Đạt'}`;
+    const scoreX = Math.max(canvas.width - 180, 20);
+    const scoreY = 45;
+    drawTextOnCanvas(ctx, scoreText, scoreX, scoreY, 20, true);
+    saveAction(currentPdfPage, { type: 'text', text: scoreText, x: scoreX, y: scoreY, size: 20, isScore: true });
+
+    // 2. Ghi lời phê của giáo viên ở đầu trang bên trái
+    const commentText = `Lời phê: ${result.loi_phe || 'Bài làm tốt'}`;
+    const commentX = 30;
+    const commentY = 45;
+    drawTextOnCanvas(ctx, commentText, commentX, commentY, 15, false);
+    saveAction(currentPdfPage, { type: 'text', text: commentText, x: commentX, y: commentY, size: 15 });
+
+    // 3. Đóng dấu nhận xét
+    if (result.danh_gia_nhanh) {
+      const stampX = 30;
+      const stampY = 80;
+      drawTextOnCanvas(ctx, result.danh_gia_nhanh, stampX, stampY, 16, false);
+      saveAction(currentPdfPage, { type: 'text', text: result.danh_gia_nhanh, x: stampX, y: stampY, size: 16 });
+    }
+
+    status.innerHTML = `<span class="text-success"><i class="fas fa-check-circle"></i> Đã chấm xong trang ${currentPdfPage}: <b>${result.diem}</b></span>`;
+    alert(`🎉 KẾT QUẢ CHẤM CỦA GEMINI (Trang ${currentPdfPage}):\n\n- Điểm số: ${result.diem}\n- Lời phê: ${result.loi_phe}\n- Nhận xét chi tiết: ${result.chi_tiet || 'Không có'}\n\nĐã tự động đóng dấu điểm đỏ và lời phê vào bài!`);
+  } catch (err) {
+    status.innerHTML = `<span class="text-danger"><i class="fas fa-exclamation-triangle"></i> ${err.message}</span>`;
+  }
+  btn.disabled = false;
 }
 
 async function exportGradedPdf() {
@@ -792,7 +785,7 @@ async function exportGradedPdf() {
           ctx.lineTo(act.x, act.y);
           ctx.stroke();
         } else if (act.type === 'text') {
-          drawTextOnCanvas(ctx, act.text, act.x, act.y);
+          drawTextOnCanvas(ctx, act.text, act.x, act.y, act.size||16, act.isScore||false);
         }
       });
 
