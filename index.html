@@ -3,162 +3,158 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Tin học cùng thầy Võ Tâm Long</title>
-<meta name="description" content="Website môn Tin học của thầy Võ Tâm Long: bài giảng, bài tập và mã nguồn trên GitHub.">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<title>EduClass · Cổng giáo viên</title>
 <style>
-:root{
-  --paper:#f4f7fc; --grid:#d9e2f1; --ink:#17255e; --text:#232a3b;
-  --margin:#d64545; --mark:#ffe45c; --card:#ffffff; --muted:#5a6479;
-}
-@media (prefers-color-scheme:dark){
-  :root{--paper:#121a33; --grid:#1f2a4d; --ink:#e8edff; --text:#d5dbee;
-        --margin:#ff7a7a; --mark:#7a6a00; --card:#1a2342; --muted:#98a3c3;}
-}
+:root{--bg:#f4f7fc;--card:#fff;--ink:#17255e;--text:#232a3b;--muted:#5a6479;--line:#d9e2f1;--acc:#d64545;--ok:#1b8a4b;--mark:#ffe45c}
+@media (prefers-color-scheme:dark){:root{--bg:#121a33;--card:#1a2342;--ink:#e8edff;--text:#d5dbee;--muted:#98a3c3;--line:#2b3866;--acc:#ff7a7a;--ok:#5fd18b;--mark:#7a6a00}}
 *{box-sizing:border-box}
-html{scroll-behavior:smooth}
-body{
-  margin:0; font-family:"Be Vietnam Pro",system-ui,sans-serif; color:var(--text);
-  line-height:1.65; background-color:var(--paper);
-  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
-  background-size:28px 28px;
-}
-/* đường lề đỏ như vở học sinh */
-body::before{content:"";position:fixed;left:clamp(14px,6vw,72px);top:0;bottom:0;width:2px;background:var(--margin);opacity:.55;pointer-events:none}
-a{color:var(--ink)}
-:focus-visible{outline:3px solid var(--margin);outline-offset:3px}
-.wrap{max-width:1000px;margin:0 auto;padding:0 20px 0 clamp(34px,9vw,110px)}
-header.nav{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:center;justify-content:space-between;padding:20px 0}
-.brand{font-weight:800;color:var(--ink);text-decoration:none;font-size:1.05rem}
-nav a{margin-left:18px;text-decoration:none;font-weight:500;color:var(--text)}
-nav a:hover{text-decoration:underline;text-decoration-color:var(--margin);text-underline-offset:5px}
-
-.hero{display:grid;grid-template-columns:1.1fr 1fr;gap:36px;align-items:center;padding:48px 0 64px}
-h1{font-size:clamp(2rem,5.2vw,3.4rem);line-height:1.12;margin:0 0 18px;color:var(--ink);font-weight:800}
-.hl{background:linear-gradient(transparent 58%,var(--mark) 58%)}
-.lead{font-size:1.1rem;max-width:46ch;color:var(--muted)}
-.btns{display:flex;flex-wrap:wrap;gap:12px;margin-top:26px}
-.btn{display:inline-block;padding:12px 22px;border-radius:6px;font-weight:700;text-decoration:none;border:2px solid var(--ink)}
-.btn.main{background:var(--ink);color:var(--paper)}
-.btn.alt{background:transparent;color:var(--ink)}
-.btn:hover{transform:translate(-2px,-2px);box-shadow:3px 3px 0 var(--margin)}
-
-.editor{background:#101730;border-radius:10px;overflow:hidden;box-shadow:8px 8px 0 var(--ink);color:#e6ebff}
-.editor .bar{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:#1b2550;font:500 .8rem "JetBrains Mono",monospace}
-.editor pre{margin:0;padding:18px;font:500 .95rem/1.7 "JetBrains Mono",monospace;white-space:pre-wrap;min-height:150px}
-.editor button{font:700 .8rem "Be Vietnam Pro",sans-serif;background:var(--mark);color:#222;border:0;border-radius:4px;padding:6px 14px;cursor:pointer}
-.out{padding:12px 18px;border-top:1px dashed #3a4780;font:500 .9rem "JetBrains Mono",monospace;color:#9ff0b5;min-height:48px}
-
-section{padding:40px 0}
-h2{font-size:clamp(1.5rem,3.4vw,2.1rem);color:var(--ink);margin:0 0 8px}
-.sub{color:var(--muted);margin:0 0 28px;max-width:60ch}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px}
-.card{background:var(--card);border:2px solid var(--ink);border-radius:8px;padding:20px}
-.card h3{margin:0 0 6px;color:var(--ink);font-size:1.1rem}
-.card p{margin:0;color:var(--muted);font-size:.95rem}
-.grade{display:inline-block;background:var(--mark);color:#222;font-weight:700;font-size:.8rem;padding:2px 10px;border-radius:99px;margin-bottom:10px}
-
-.about{display:grid;grid-template-columns:auto 1fr;gap:24px;align-items:center;background:var(--card);border:2px solid var(--ink);border-radius:8px;padding:24px}
-.avatar{width:96px;height:96px;border-radius:50%;background:var(--ink);color:var(--paper);display:grid;place-items:center;font-weight:800;font-size:2rem}
-
-.steps{counter-reset:s;list-style:none;padding:0;margin:0}
-.steps li{counter-increment:s;position:relative;padding:12px 0 12px 52px}
-.steps li::before{content:counter(s);position:absolute;left:0;top:10px;width:34px;height:34px;border-radius:50%;background:var(--ink);color:var(--paper);display:grid;place-items:center;font-weight:700}
-code{font-family:"JetBrains Mono",monospace;background:var(--card);border:1px solid var(--grid);padding:1px 6px;border-radius:4px;font-size:.9em}
-footer{padding:36px 0 48px;color:var(--muted);font-size:.9rem}
-
-@media (max-width:760px){
-  .hero{grid-template-columns:1fr;padding-top:24px}
-  .about{grid-template-columns:1fr}
-  nav a{margin:0 14px 0 0}
-}
-@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}.btn:hover{transform:none}}
+body{margin:0;font:15px/1.55 system-ui,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--text)}
+.app{display:grid;grid-template-columns:230px 1fr;min-height:100vh}
+aside{background:var(--ink);color:#fff;padding:18px 12px;position:sticky;top:0;height:100vh}
+aside h1{font-size:1.05rem;margin:0 8px 14px}
+aside label{display:block;font-size:.8rem;margin:0 8px 4px;opacity:.8}
+aside select{width:calc(100% - 16px);margin:0 8px 14px}
+nav button{display:block;width:100%;text-align:left;background:none;border:0;color:#fff;padding:10px 12px;border-radius:6px;font:inherit;cursor:pointer}
+nav button:hover{background:rgba(255,255,255,.12)}
+nav button.on{background:var(--mark);color:#222;font-weight:700}
+main{padding:24px clamp(14px,3vw,36px);max-width:1000px}
+h2{margin:0 0 4px;color:var(--ink)} .sub{color:var(--muted);margin:0 0 18px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:16px;margin-bottom:16px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:16px}
+.stat b{display:block;font-size:1.8rem;color:var(--ink)}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;margin-bottom:10px}
+.row>div{display:flex;flex-direction:column;gap:3px;font-size:.85rem;color:var(--muted)}
+input,select,textarea{font:inherit;padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:var(--card);color:var(--text)}
+button.b{font:inherit;font-weight:600;background:var(--ink);color:var(--card);border:0;border-radius:6px;padding:9px 16px;cursor:pointer}
+button.b.alt{background:transparent;color:var(--ink);border:1px solid var(--ink)}
+button.x{background:none;border:0;color:var(--acc);cursor:pointer;font-size:1rem}
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+th{font-size:.82rem;color:var(--muted)}
+td input[type=number]{width:80px}
+.empty{color:var(--muted);padding:10px 0}
+.tag{background:var(--mark);color:#222;border-radius:99px;padding:1px 10px;font-size:.8rem;font-weight:600}
+:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+@media (max-width:760px){.app{grid-template-columns:1fr}aside{position:static;height:auto}nav{display:flex;flex-wrap:wrap;gap:4px}nav button{width:auto}}
 </style>
 </head>
 <body>
-<div class="wrap">
-  <header class="nav">
-    <a class="brand" href="#top">Tin học · Thầy Võ Tâm Long</a>
-    <nav aria-label="Menu chính">
-      <a href="#lop-hoc">Chương trình</a>
-      <a href="#github">Bài giảng</a>
-      <a href="#thay">Về thầy</a>
-      <a href="#lien-he">Liên hệ</a>
-    </nav>
-  </header>
-
-  <main id="top">
-    <div class="hero">
-      <div>
-        <h1>Học Tin học bằng cách <span class="hl">tự tay viết code</span></h1>
-        <p class="lead">Bài giảng, bài tập và mã nguồn của lớp Tin học thầy Võ Tâm Long. Mọi thứ đều có trên GitHub để các em tải về, chạy thử và sửa.</p>
-        <div class="btns">
-          <a class="btn main" href="#github">Xem bài giảng</a>
-          <a class="btn alt" href="#lop-hoc">Chương trình học</a>
-        </div>
-      </div>
-      <div class="editor" aria-label="Ví dụ chạy thử mã Python">
-        <div class="bar"><span>bai_01.py</span><button id="run" type="button">Chạy thử</button></div>
-<pre>ten = "em"
-for i in range(3):
-    print("Xin chào,", ten, i + 1)</pre>
-        <div class="out" id="out" aria-live="polite">Bấm “Chạy thử” để xem kết quả.</div>
-      </div>
-    </div>
-
-    <section id="lop-hoc">
-      <h2>Chương trình học</h2>
-      <p class="sub">Đi từ làm quen với máy tính đến lập trình thực hành. Thầy có thể chỉnh nội dung theo từng khối lớp.</p>
-      <div class="grid">
-        <article class="card"><span class="grade">Khởi đầu</span><h3>Tin học cơ bản</h3><p>Máy tính, thư mục, soạn thảo văn bản, bảng tính và an toàn khi dùng Internet.</p></article>
-        <article class="card"><span class="grade">Tư duy</span><h3>Scratch</h3><p>Kéo thả khối lệnh để làm trò chơi và hoạt hình, học thuật toán qua việc chơi.</p></article>
-        <article class="card"><span class="grade">Lập trình</span><h3>Python</h3><p>Biến, vòng lặp, hàm và giải bài tập nhỏ. Có bài mẫu để chạy thử ngay.</p></article>
-        <article class="card"><span class="grade">Web</span><h3>HTML và CSS</h3><p>Tự làm một trang web cá nhân và đưa lên mạng bằng GitHub.</p></article>
-      </div>
-    </section>
-
-    <section id="github">
-      <h2>Bài giảng trên GitHub</h2>
-      <p class="sub">Mỗi bài là một thư mục trong kho mã nguồn. Các em tải về hoặc bấm “Fork” để làm bài của mình.</p>
-      <div class="grid">
-        <article class="card"><h3>Kho bài giảng</h3><p><a href="https://github.com/votamlong/tinhoc.votamlong" target="_blank" rel="noopener">github.com/votamlong/tinhoc.votamlong</a></p></article>
-        <article class="card"><h3>Bài tập Python</h3><p>Thư mục <code>python</code> trong kho bài giảng (sắp có).</p></article>
-        <article class="card"><h3>Dự án của học sinh</h3><p>Thư mục <code>du-an</code> trong kho bài giảng (sắp có).</p></article>
-      </div>
-    </section>
-
-    <section id="thay">
-      <h2>Về thầy</h2>
-      <div class="about">
-        <div class="avatar" aria-hidden="true">VL</div>
-        <div>
-          <strong>Thầy Võ Tâm Long</strong>, giáo viên Tin học.
-          <p style="margin:6px 0 0;color:var(--muted)">Thầy muốn học sinh hiểu máy tính bằng cách tự làm: viết một dòng lệnh, chạy thử, sửa lỗi rồi viết tiếp. (Thầy có thể thay đoạn giới thiệu này bằng phần của riêng mình.)</p>
-        </div>
-      </div>
-    </section>
-
-    <section id="lien-he">
-      <h2>Liên hệ</h2>
-      <p class="sub">Email: <a href="mailto:email@example.com">email@example.com</a> · Zalo lớp: 0xxx xxx xxx</p>
-    </section>
-  </main>
-
-  <footer>© <span id="y"></span> Thầy Võ Tâm Long. Website tĩnh, lưu trên GitHub và chạy bằng Cloudflare Pages.</footer>
+<div class="app">
+  <aside>
+    <h1>EduClass · Giáo viên</h1>
+    <label for="role">Vai trò</label>
+    <select id="role" onchange="setRole(this.value)">
+      <option value="tin">Giáo viên Tin học</option>
+      <option value="bomon">Giáo viên bộ môn</option>
+      <option value="giamthi">Giám thị</option>
+    </select>
+    <nav id="nav" aria-label="Chức năng"></nav>
+  </aside>
+  <main id="main"></main>
 </div>
 
 <script>
-document.getElementById("y").textContent = new Date().getFullYear();
-document.getElementById("run").addEventListener("click", function(){
-  var out = document.getElementById("out"), lines = ["Xin chào, em 1","Xin chào, em 2","Xin chào, em 3"], i = 0;
-  out.textContent = "";
-  var t = setInterval(function(){
-    out.textContent += (i ? "\n" : "") + lines[i]; out.style.whiteSpace = "pre-line"; i++;
-    if(i >= lines.length) clearInterval(t);
-  }, 350);
-});
+var MENU={home:'Tổng quan',lop:'Lớp và học sinh',bai:'Giao bài tập',diem:'Chấm điểm',dd:'Điểm danh',thi:'Lịch coi thi',bb:'Biên bản coi thi'};
+var ROLES={tin:['home','lop','bai','diem','dd','thi','bb'],bomon:['home','lop','bai','diem','dd'],giamthi:['home','thi','bb']};
+var role='tin',view='home',S={cls:null,bai:null,date:today()};
+var db=load();
+
+function today(){return new Date().toISOString().slice(0,10)}
+function uid(){return Math.random().toString(36).slice(2,8)}
+function esc(s){return String(s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function seed(){
+  var hs=['Nguyễn Minh An','Trần Bảo Châu','Lê Hoàng Dũng','Phạm Gia Hân'].map(function(n){return{id:uid(),name:n}});
+  var c={id:uid(),name:'Lớp 10A1',students:hs};
+  return{classes:[c],bai:[],diem:{},dd:{},thi:[],bb:[]};
+}
+function load(){try{var s=localStorage.getItem('educlass_gv');if(s)return JSON.parse(s)}catch(e){}return seed()}
+function save(){try{localStorage.setItem('educlass_gv',JSON.stringify(db))}catch(e){}}
+function cls(id){return db.classes.find(function(c){return c.id===id})}
+function curCls(){return cls(S.cls)||db.classes[0]}
+function opts(a,sel,lab){return a.map(function(o){return '<option value="'+o.id+'"'+(o.id===sel?' selected':'')+'>'+esc(lab?lab(o):o.name)+'</option>'}).join('')}
+function val(id){return document.getElementById(id).value.trim()}
+
+function setRole(r){role=r;if(ROLES[r].indexOf(view)<0)view='home';render()}
+function go(v){view=v;render()}
+function render(){
+  document.getElementById('role').value=role;
+  document.getElementById('nav').innerHTML=ROLES[role].map(function(k){return '<button class="'+(k===view?'on':'')+'" onclick="go(\''+k+'\')">'+MENU[k]+'</button>'}).join('');
+  document.getElementById('main').innerHTML=V[view]();
+  save();
+}
+
+var V={
+home:function(){
+  var n=db.classes.reduce(function(a,c){return a+c.students.length},0);
+  var up=db.thi.filter(function(t){return t.date>=today()}).sort(function(a,b){return a.date<b.date?-1:1});
+  return '<h2>Tổng quan</h2><p class="sub">Dữ liệu hôm nay: '+today()+'</p><div class="stats">'+
+   [['Lớp',db.classes.length],['Học sinh',n],['Bài tập',db.bai.length],['Ca coi thi sắp tới',up.length],['Biên bản',db.bb.length]].map(function(s){return '<div class="card stat"><b>'+s[1]+'</b>'+s[0]+'</div>'}).join('')+'</div>'+
+   '<div class="card"><b>Ca coi thi sắp tới</b>'+(up.length?'<ul>'+up.slice(0,5).map(function(t){return '<li>'+esc(t.date)+' · '+esc(t.name)+' · phòng '+esc(t.room)+' · '+esc(t.gt)+'</li>'}).join('')+'</ul>':'<p class="empty">Chưa có ca nào.</p>')+'</div>';
+},
+lop:function(){
+  var c=curCls();
+  var rows=c?c.students.map(function(s,i){return '<tr><td>'+(i+1)+'</td><td>'+esc(s.name)+'</td><td><button class="x" title="Xóa" onclick="delHS(\''+s.id+'\')">✕</button></td></tr>'}).join(''):'';
+  return '<h2>Lớp và học sinh</h2><p class="sub">Tạo lớp, thêm hoặc xóa học sinh.</p>'+
+   '<div class="card"><div class="row"><div>Tên lớp mới<input id="nc" placeholder="Ví dụ: 11B2"></div><button class="b" onclick="addLop()">Thêm lớp</button></div></div>'+
+   (c?'<div class="card"><div class="row"><div>Chọn lớp<select onchange="S.cls=this.value;render()">'+opts(db.classes,c.id)+'</select></div>'+
+   '<div>Tên học sinh<input id="ns" placeholder="Họ và tên"></div><button class="b" onclick="addHS()">Thêm học sinh</button>'+
+   '<button class="b alt" onclick="delLop()">Xóa lớp này</button></div><div class="tw"><table><tr><th>STT</th><th>Họ và tên</th><th></th></tr>'+rows+'</table></div></div>':'<p class="empty">Chưa có lớp nào.</p>');
+},
+bai:function(){
+  var rows=db.bai.map(function(b){var c=cls(b.cls);return '<tr><td>'+esc(b.title)+'</td><td>'+esc(c?c.name:'(đã xóa)')+'</td><td>'+esc(b.due)+'</td><td>'+b.max+'</td><td><button class="x" onclick="delBai(\''+b.id+'\')">✕</button></td></tr>'}).join('');
+  return '<h2>Giao bài tập</h2><p class="sub">Tạo bài tập kèm hạn nộp và thang điểm.</p>'+
+   '<div class="card"><div class="row"><div>Tên bài<input id="bt" placeholder="Bài 1: Vòng lặp for"></div><div>Lớp<select id="bc">'+opts(db.classes)+'</select></div>'+
+   '<div>Hạn nộp<input id="bd" type="date" value="'+today()+'"></div><div>Điểm tối đa<input id="bm" type="number" value="10" min="1" style="width:90px"></div><button class="b" onclick="addBai()">Giao bài</button></div></div>'+
+   '<div class="card tw">'+(rows?'<table><tr><th>Bài tập</th><th>Lớp</th><th>Hạn nộp</th><th>Tối đa</th><th></th></tr>'+rows+'</table>':'<p class="empty">Chưa giao bài nào.</p>')+'</div>';
+},
+diem:function(){
+  if(!db.bai.length)return '<h2>Chấm điểm</h2><p class="empty">Hãy giao bài tập trước.</p>';
+  var b=db.bai.find(function(x){return x.id===S.bai})||db.bai[0],c=cls(b.cls),sc=db.diem[b.id]||{};
+  var rows=c?c.students.map(function(s,i){return '<tr><td>'+(i+1)+'</td><td>'+esc(s.name)+'</td><td><input type="number" min="0" max="'+b.max+'" step="0.25" value="'+(sc[s.id]!=null?sc[s.id]:'')+'" onchange="setDiem(\''+b.id+'\',\''+s.id+'\',this.value)"></td></tr>'}).join(''):'';
+  return '<h2>Chấm điểm</h2><p class="sub">Điểm lưu ngay khi bạn nhập.</p><div class="card"><div class="row"><div>Bài tập<select onchange="S.bai=this.value;render()">'+opts(db.bai,b.id,function(o){return o.title})+'</select></div>'+
+   '<button class="b alt" onclick="xuatDiem()">Tải bảng điểm (CSV)</button></div><div class="tw"><table><tr><th>STT</th><th>Học sinh</th><th>Điểm (/'+b.max+')</th></tr>'+rows+'</table></div></div>';
+},
+dd:function(){
+  var c=curCls();if(!c)return '<h2>Điểm danh</h2><p class="empty">Chưa có lớp.</p>';
+  var k=S.date+'|'+c.id,m=db.dd[k]||{},p=0,a=0;
+  var rows=c.students.map(function(s,i){var v=m[s.id]||'P';if(v==='P')p++;else a++;
+    return '<tr><td>'+(i+1)+'</td><td>'+esc(s.name)+'</td><td><select onchange="setDD(\''+k+'\',\''+s.id+'\',this.value)"><option value="P"'+(v==='P'?' selected':'')+'>Có mặt</option><option value="A"'+(v==='A'?' selected':'')+'>Vắng</option><option value="L"'+(v==='L'?' selected':'')+'>Đi muộn</option></select></td></tr>'}).join('');
+  return '<h2>Điểm danh</h2><p class="sub">Mặc định mọi học sinh là có mặt.</p><div class="card"><div class="row"><div>Lớp<select onchange="S.cls=this.value;render()">'+opts(db.classes,c.id)+'</select></div>'+
+   '<div>Ngày<input type="date" value="'+S.date+'" onchange="S.date=this.value;render()"></div><span class="tag">Có mặt/muộn: '+p+' · Vắng: '+a+'</span></div><div class="tw"><table><tr><th>STT</th><th>Học sinh</th><th>Trạng thái</th></tr>'+rows+'</table></div></div>';
+},
+thi:function(){
+  var rows=db.thi.slice().sort(function(a,b){return a.date<b.date?-1:1}).map(function(t){return '<tr><td>'+esc(t.date)+'</td><td>'+esc(t.name)+'</td><td>'+esc(t.room)+'</td><td>'+esc(t.gt)+'</td><td><button class="x" onclick="delThi(\''+t.id+'\')">✕</button></td></tr>'}).join('');
+  return '<h2>Lịch coi thi</h2><p class="sub">Phân công giám thị cho từng ca thi.</p><div class="card"><div class="row"><div>Kỳ/Môn thi<input id="tn" placeholder="Tin học giữa kỳ"></div><div>Ngày<input id="td" type="date" value="'+today()+'"></div>'+
+   '<div>Phòng<input id="tr" style="width:90px" placeholder="P.201"></div><div>Giám thị<input id="tg" placeholder="Họ tên"></div><button class="b" onclick="addThi()">Phân công</button></div></div>'+
+   '<div class="card tw">'+(rows?'<table><tr><th>Ngày</th><th>Kỳ/Môn</th><th>Phòng</th><th>Giám thị</th><th></th></tr>'+rows+'</table>':'<p class="empty">Chưa có ca thi nào.</p>')+'</div>';
+},
+bb:function(){
+  if(!db.thi.length)return '<h2>Biên bản coi thi</h2><p class="empty">Hãy tạo lịch coi thi trước.</p>';
+  var rows=db.bb.map(function(r){var t=db.thi.find(function(x){return x.id===r.thi});return '<tr><td>'+esc(r.time)+'</td><td>'+esc(t?t.name+' · '+t.room:'')+'</td><td>'+esc(r.hs)+'</td><td style="white-space:normal">'+esc(r.note)+'</td><td><button class="x" onclick="delBB(\''+r.id+'\')">✕</button></td></tr>'}).join('');
+  return '<h2>Biên bản coi thi</h2><p class="sub">Ghi nhận học sinh vi phạm hoặc sự cố trong phòng thi.</p><div class="card"><div class="row"><div>Ca thi<select id="bi">'+opts(db.thi,null,function(o){return o.date+' · '+o.name+' · '+o.room})+'</select></div>'+
+   '<div>Học sinh<input id="bh" placeholder="Họ tên hoặc SBD"></div><div style="flex:1;min-width:200px">Nội dung<input id="bn" placeholder="Mô tả ngắn" style="width:100%"></div><button class="b" onclick="addBB()">Lập biên bản</button></div></div>'+
+   '<div class="card tw">'+(rows?'<table><tr><th>Thời gian</th><th>Ca thi</th><th>Học sinh</th><th>Nội dung</th><th></th></tr>'+rows+'</table>':'<p class="empty">Chưa có biên bản.</p>')+'</div>';
+}};
+
+function addLop(){var n=val('nc');if(!n)return;var c={id:uid(),name:n,students:[]};db.classes.push(c);S.cls=c.id;render()}
+function delLop(){var c=curCls();if(!c||!confirm('Xóa '+c.name+' cùng toàn bộ học sinh?'))return;db.classes=db.classes.filter(function(x){return x.id!==c.id});db.bai=db.bai.filter(function(b){return b.cls!==c.id});S.cls=null;render()}
+function addHS(){var n=val('ns'),c=curCls();if(!n||!c)return;c.students.push({id:uid(),name:n});render()}
+function delHS(id){var c=curCls();c.students=c.students.filter(function(s){return s.id!==id});render()}
+function addBai(){var t=val('bt');if(!t||!db.classes.length)return;db.bai.push({id:uid(),title:t,cls:val('bc'),due:val('bd'),max:+val('bm')||10});render()}
+function delBai(id){db.bai=db.bai.filter(function(b){return b.id!==id});delete db.diem[id];render()}
+function setDiem(b,s,v){db.diem[b]=db.diem[b]||{};if(v==='')delete db.diem[b][s];else db.diem[b][s]=+v;save()}
+function setDD(k,s,v){db.dd[k]=db.dd[k]||{};db.dd[k][s]=v;render()}
+function addThi(){var n=val('tn'),r=val('tr'),g=val('tg');if(!n||!r||!g)return;db.thi.push({id:uid(),name:n,date:val('td'),room:r,gt:g});render()}
+function delThi(id){db.thi=db.thi.filter(function(t){return t.id!==id});render()}
+function addBB(){var h=val('bh'),n=val('bn');if(!h||!n)return;db.bb.push({id:uid(),thi:val('bi'),hs:h,note:n,time:new Date().toLocaleString('vi-VN')});render()}
+function delBB(id){db.bb=db.bb.filter(function(r){return r.id!==id});render()}
+function xuatDiem(){
+  var b=db.bai.find(function(x){return x.id===S.bai})||db.bai[0],c=cls(b.cls),sc=db.diem[b.id]||{};
+  var csv='STT,Họ và tên,Điểm\n'+c.students.map(function(s,i){return (i+1)+',"'+s.name.replace(/"/g,'""')+'",'+(sc[s.id]!=null?sc[s.id]:'')}).join('\n');
+  var a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'}));a.download='bang-diem-'+b.title+'.csv';a.click();
+}
+render();
 </script>
 </body>
 </html>
