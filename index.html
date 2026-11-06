@@ -428,7 +428,7 @@ async function genQuiz(){
   $('qst').innerText='⏳ Gemini đang soạn đề...';
 
   try {
-    const model = "gemini-2.5-flash";
+    const model = "gemini-3.8-flash";
     const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`;
 
     const payload = {
