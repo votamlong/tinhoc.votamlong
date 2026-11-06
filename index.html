@@ -400,8 +400,54 @@ pdfGrade(){
 }
 };
 
-/* ===== CẤU HÌNH GEMINI API KEY ===== */
+/* ===== CẤU HÌNH GEMINI API & BỘ ĐIỀU PHỐI DỰ PHÒNG CHỐNG QUÁ TẢI ===== */
 const GEMINI_API_KEY = "AIzaSyDm6UnyZeYeY4W5UUNAO4cFT45LduzQv4I";
+// Danh sách các model fallback theo thứ tự ưu tiên
+const GEMINI_FALLBACK_MODELS = [
+  "gemini-2.5-flash",
+  "gemini-2.5-flash-lite",
+  "gemini-1.5-flash"
+];
+
+async function callGeminiApiWithFallback(payload, onRetryInfo) {
+  let lastError = null;
+  for (const model of GEMINI_FALLBACK_MODELS) {
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try {
+        if (onRetryInfo) onRetryInfo(model, attempt);
+        const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`;
+        const res = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        const j = await res.json();
+        if (res.ok && !j.error) {
+          const rawText = j.candidates?.[0]?.content?.parts?.[0]?.text || "";
+          return rawText;
+        }
+
+        const msg = j.error?.message || `Lỗi HTTP ${res.status}`;
+        lastError = new Error(msg);
+
+        // Nếu máy chủ báo quá tải (503/429/high demand), dừng attempt này và chuyển sang model khác hoặc đợi
+        const isOverloaded = res.status === 429 || res.status === 503 || /demand|quota|overload|capacity|busy/i.test(msg);
+        if (isOverloaded) {
+          await new Promise(r => setTimeout(r, 1200));
+          break; // Đổi sang model tiếp theo trong danh sách
+        } else {
+          throw lastError; // Lỗi khác (ví dụ sai key, cú pháp) thì quăng lỗi ra ngay
+        }
+      } catch (err) {
+        lastError = err;
+        await new Promise(r => setTimeout(r, 800));
+      }
+    }
+  }
+  throw lastError || new Error("Các máy chủ Gemini hiện đang bận, vui lòng thử lại sau giây lát.");
+}
+
 let QZ=[];
 
 VIEWS.quiz=function(){
@@ -428,9 +474,6 @@ async function genQuiz(){
   $('qst').innerText='⏳ Gemini đang soạn đề...';
 
   try {
-    const model = "gemini-3.8-flash";
-    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`;
-
     const payload = {
       contents: [{ parts: [{ text: p }] }],
       generationConfig: {
@@ -438,16 +481,10 @@ async function genQuiz(){
       }
     };
 
-    const r = await fetch(endpoint, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
+    const rawText = await callGeminiApiWithFallback(payload, (m, a) => {
+      $('qst').innerText = `⏳ Đang kết nối máy chủ (${m})...`;
     });
 
-    const j = await r.json();
-    if(!r.ok || j.error) throw new Error(j.error?.message || 'Lỗi kết nối Gemini ('+r.status+')');
-
-    const rawText = j.candidates?.[0]?.content?.parts?.[0]?.text || "";
     const cleanJson = rawText.replace(/```json|```/g, '').trim();
     const a = JSON.parse(cleanJson);
 
@@ -665,7 +702,7 @@ async function changePdfPage(delta) {
   }
 }
 
-/* Chấm bài tự động qua Gemini Vision */
+/* Chấm bài tự động qua Gemini Vision với Fallback tự động */
 async function gradeWithAi() {
   if (!pdfJsDoc) return alert('Vui lòng chọn file PDF bài làm của học sinh trước!');
   
@@ -691,9 +728,6 @@ Trả về DUY NHẤT một chuỗi JSON chuẩn (không dùng markdown code fen
   "danh_gia_nhanh": "✔ ĐÚNG"
 }`;
 
-    const model = "gemini-2.5-flash";
-    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`;
-
     const payload = {
       contents: [{
         parts: [
@@ -706,16 +740,10 @@ Trả về DUY NHẤT một chuỗi JSON chuẩn (không dùng markdown code fen
       }
     };
 
-    const res = await fetch(endpoint, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
+    const raw = await callGeminiApiWithFallback(payload, (m, a) => {
+      status.innerHTML = `<span class="text-primary"><i class="fas fa-spinner fa-spin"></i> Đang đọc bài với máy chủ ${m}...</span>`;
     });
 
-    const jsonRes = await res.json();
-    if (!res.ok || jsonRes.error) throw new Error(jsonRes.error?.message || `Lỗi AI (${res.status})`);
-
-    const raw = jsonRes.candidates?.[0]?.content?.parts?.[0]?.text || "{}";
     const result = JSON.parse(raw.replace(/```json|```/g, '').trim());
 
     // Đóng dấu mực đỏ lên trang bài làm của học sinh
