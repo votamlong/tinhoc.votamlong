@@ -376,16 +376,18 @@ pdfGrade(){
             <span class="btn btn-light border disabled fw-bold" id="pdfPageIndicator">0 / 0</span>
             <button class="btn btn-light border" onclick="changePdfPage(1)"><i class="fas fa-chevron-right"></i></button>
           </div>
-          <button class="btn btn-sm btn-primary fw-bold" id="btnAiGrade" onclick="gradeWithAi()"><i class="fas fa-robot me-1"></i> AI Chấm bài</button>
+          <button class="btn btn-sm btn-outline-primary fw-bold" id="btnAiGrade" onclick="gradeWithAi()"><i class="fas fa-robot me-1"></i> Chấm trang này</button>
+          <button class="btn btn-sm btn-primary fw-bold" id="btnAiAll" onclick="gradeAllPages()"><i class="fas fa-bolt me-1"></i> AI CHẤM TẤT CẢ TRANG</button>
+          <button class="btn btn-sm btn-danger d-none" id="btnAiStop" onclick="aiCancel=true"><i class="fas fa-stop"></i> Dừng</button>
           <button class="btn btn-sm btn-success fw-bold" onclick="exportGradedPdf()"><i class="fas fa-file-export me-1"></i> Xuất PDF</button>
         </div>
       </div>
       <div class="row g-2 mt-1">
         <div class="col-md-9 col-12">
-          <input id="aiRubric" class="form-control form-control-sm" placeholder="Yêu cầu / Ba-dem đáp án cho AI chấm (Tùy chọn: VD: Bài toán tính diện tích, thang điểm 10...)">
+          <input id="aiRubric" class="form-control form-control-sm" placeholder="Đáp án / Barem cho AI chấm (tùy chọn). VD: Câu 1 (2đ): x=3; Câu 2 (3đ): diện tích 12cm²...">
         </div>
         <div class="col-md-3 col-12 text-md-end">
-          <span id="aiGradeStatus" class="small fw-bold"></span>
+          <div class="input-group input-group-sm mb-1"><span class="input-group-text">Thang điểm</span><input id="aiScale" type="number" value="10" min="1" class="form-control" onchange="stampAiAnnotations().then(renderAiReport)"></div><span id="aiGradeStatus" class="small fw-bold"></span>
         </div>
       </div>
     </div>
@@ -649,7 +651,7 @@ async function callGemini(payload){
       }
       if(r.status===404)break;                       // model không tồn tại -> thử model kế tiếp
       if(![429,500,503].includes(r.status))throw lastErr;
-      await wait(1500*(i+1));                        // quá tải -> chờ rồi thử lại
+      await wait(r.status===429?6000*(i+1):1500*(i+1));  // quá tải / giới hạn tốc độ -> chờ rồi thử lại
     }
   }
   throw lastErr;
@@ -747,6 +749,7 @@ let isPdfPainting = false;
 let pageAnnotations = {};
 
 function initPdfGradingModule() {
+  if ($('content') && !$('aiReport')) $('content').insertAdjacentHTML('beforeend', '<div id="aiReport"></div>');
   if (window.pdfjsLib) {
     pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
   }
@@ -763,6 +766,7 @@ async function loadPdfFile(event) {
     totalPdfPages = pdfJsDoc.numPages;
     currentPdfPage = 1;
     pageAnnotations = {};
+    gradeResults = {}; pageDims = {}; generalComment = ''; renderAiReport();
     if($('pdfLoadingNotice')) $('pdfLoadingNotice').classList.add('d-none');
     renderCurrentPdfPage();
   };
@@ -775,6 +779,7 @@ async function renderCurrentPdfPage() {
 
   const page = await pdfJsDoc.getPage(currentPdfPage);
   const viewport = page.getViewport({ scale: pdfScale });
+  pageDims[currentPdfPage] = { w: viewport.width, h: viewport.height };
 
   const renderCanvas = $('pdfRenderCanvas');
   const drawCanvas = $('pdfDrawCanvas');
@@ -906,79 +911,259 @@ async function changePdfPage(delta) {
   }
 }
 
-/* Chấm bài tự động qua Gemini Vision */
+/* ===== CHẤM BÀI AI — TẤT CẢ CÁC TRANG, CHI TIẾT TỪNG CÂU ===== */
+let gradeResults = {};     // {số trang: kết quả AI của trang đó}
+let pageDims = {};         // {số trang: {w,h}} kích thước canvas (theo pdfScale) để đóng dấu đúng vị trí
+let generalComment = '';   // lời phê chung toàn bài
+let aiCancel = false, aiBusy = false;
+
+const measureCtx = document.createElement('canvas').getContext('2d');
+const FONT = 'Segoe UI", Tahoma, sans-serif';
+function wrapLines(ctx, text, maxW) {
+  const out = [];
+  String(text || '').split('\n').forEach(par => {
+    let cur = '';
+    par.split(/\s+/).filter(Boolean).forEach(w => {
+      const t = cur ? cur + ' ' + w : w;
+      if (ctx.measureText(t).width > maxW && cur) { out.push(cur); cur = w; } else cur = t;
+    });
+    if (cur) out.push(cur);
+  });
+  return out;
+}
+function wrapText(text, size, maxW, bold = true) {
+  measureCtx.font = `${bold ? 'bold ' : ''}${size}px "${FONT}`;
+  return wrapLines(measureCtx, text, maxW);
+}
+function textW(text, size) {
+  measureCtx.font = `bold ${size}px "${FONT}`;
+  return measureCtx.measureText(text).width;
+}
+const num = v => { v = parseFloat(String(v).replace(',', '.')); return isFinite(v) ? v : 0; };
+const fmt = n => String(Math.round(n * 100) / 100);
+
+function parseAiJson(raw) {
+  const t = String(raw || '').replace(/```json|```/g, '').trim();
+  try { return JSON.parse(t); }
+  catch (e) {
+    const m = t.match(/\{[\s\S]*\}/);
+    if (m) return JSON.parse(m[0]);
+    throw new Error('AI trả về dữ liệu không phải JSON, hãy thử lại.');
+  }
+}
+
+async function pageToJpegBase64(n) {
+  const page = await pdfJsDoc.getPage(n);
+  const vp = page.getViewport({ scale: 1.6 });
+  const c = document.createElement('canvas');
+  c.width = vp.width; c.height = vp.height;
+  const x = c.getContext('2d');
+  x.fillStyle = '#fff'; x.fillRect(0, 0, c.width, c.height);
+  await page.render({ canvasContext: x, viewport: vp }).promise;
+  return c.toDataURL('image/jpeg', 0.88).split(',')[1];
+}
+
+/* Chấm MỘT trang, trả về kết quả chi tiết */
+async function aiGradePage(n) {
+  const rubric = ($('aiRubric')?.value || '').trim();
+  const prev = Object.keys(gradeResults).map(Number).filter(k => k < n).sort((a, b) => a - b)
+    .map(k => gradeResults[k].cac_cau.map(c => `${c.cau} (${c.diem_toi_da}đ)`).join(', ')).filter(Boolean).join('; ');
+
+  const promptText = `Bạn là giáo viên giàu kinh nghiệm tại Việt Nam đang chấm bài kiểm tra TỰ LUẬN. Đây là trang ${n}/${totalPdfPages} của bài làm.
+${rubric ? 'ĐÁP ÁN / BAREM / YÊU CẦU CỦA GIÁO VIÊN (ưu tiên tuyệt đối): ' + rubric : 'Không có barem: hãy tự giải đề, tự xác định điểm tối đa hợp lý cho từng câu/ý (nếu đề có ghi sẵn điểm thì dùng đúng điểm đó).'}
+${prev ? 'Các câu đã chấm ở những trang trước: ' + prev + '. Nếu câu nào tiếp tục từ trang trước thì KHÔNG tính lại điểm tối đa (diem = 0, diem_toi_da = 0) và ghi "tiếp tục câu ..." trong nhận xét.' : ''}
+Hãy chấm CHI TIẾT từng câu / từng ý xuất hiện trên trang này: xem lời giải từng bước, chỉ rõ bước đúng, bước sai, lỗi tính toán / lập luận / trình bày và điểm trừ. Chấm công tâm, chính xác. Nếu chữ viết không đọc được thì nói rõ trong nhận xét, không được đoán.
+Nếu trang trống hoặc không có bài làm thì trả "trang_trong": true và "cac_cau": [].
+Trả về DUY NHẤT một đối tượng JSON (không dùng markdown) đúng cấu trúc:
+{"trang_trong":false,"cac_cau":[{"cau":"Câu 1a","diem":1.5,"diem_toi_da":2,"ket_qua":"dung | sai | mot_phan","vi_tri_y":0.35,"nhan_xet":"nhận xét chi tiết từng bước","loi_sai":"các lỗi sai cụ thể, để trống nếu đúng","goi_y":"cách làm đúng / gợi ý sửa"}],"loi_phe_trang":"lời phê ngắn cho trang (tối đa 20 từ)"}
+"ket_qua" chỉ nhận một trong ba giá trị: dung, sai, mot_phan. "vi_tri_y" là số từ 0 đến 1: vị trí theo chiều dọc (0 = mép trên trang, 1 = mép dưới) ở CUỐI phần trả lời của câu đó, dùng để đóng dấu điểm ở lề phải. "diem" và "diem_toi_da" là số.`;
+
+  const j = await callGemini({
+    contents: [{ parts: [{ text: promptText }, { inlineData: { mimeType: 'image/jpeg', data: await pageToJpegBase64(n) } }] }],
+    generationConfig: { responseMimeType: 'application/json' }
+  });
+  const r = parseAiJson(j.candidates?.[0]?.content?.parts?.[0]?.text);
+  const list = (Array.isArray(r.cac_cau) ? r.cac_cau : []).map(c => {
+    const mx = Math.max(0, num(c.diem_toi_da)), d = Math.max(0, num(c.diem));
+    return {
+      cau: String(c.cau || 'Câu ?'),
+      diem: mx > 0 ? Math.min(d, mx) : 0,
+      diem_toi_da: mx,
+      ket_qua: String(c.ket_qua || '').toLowerCase(),
+      vi_tri_y: Math.min(.97, Math.max(.05, num(c.vi_tri_y) || .5)),
+      nhan_xet: String(c.nhan_xet || ''),
+      loi_sai: String(c.loi_sai || ''),
+      goi_y: String(c.goi_y || '')
+    };
+  });
+  return { trang_trong: !!r.trang_trong, cac_cau: list, loi_phe_trang: String(r.loi_phe_trang || '') };
+}
+
+function calcTotals() {
+  let got = 0, max = 0;
+  Object.values(gradeResults).forEach(r => r.cac_cau.forEach(c => { got += c.diem; max += c.diem_toi_da; }));
+  const scale = Math.max(1, num($('aiScale')?.value) || 10);
+  return { got, max, scale, final: max > 0 ? Math.round(got / max * scale * 100) / 100 : 0 };
+}
+
+/* Đóng dấu mực đỏ cho tất cả các trang đã chấm (xóa dấu AI cũ, giữ nét vẽ tay của giáo viên) */
+async function stampAiAnnotations() {
+  const tot = calcTotals(), any = Object.keys(gradeResults).length > 0;
+  for (let n = 1; n <= totalPdfPages; n++) {
+    const keep = (pageAnnotations[n] || []).filter(a => !a.ai), r = gradeResults[n];
+    if (!r && !(n === 1 && any)) { pageAnnotations[n] = keep; continue; }
+    const page = await pdfJsDoc.getPage(n), vp = page.getViewport({ scale: pdfScale }), w = vp.width, h = vp.height;
+    pageDims[n] = { w, h };
+    const add = (text, x, y, size, isScore) => keep.push({ type: 'text', text, x, y, size, isScore: !!isScore, ai: true });
+
+    let topRight = 0;
+    if (n === 1 && tot.max > 0) {
+      const t = `ĐIỂM: ${fmt(tot.final)}/${fmt(tot.scale)}`, tw = textW(t, 22);
+      add(t, w - tw - 24, 44, 22, true);
+      topRight = tw + 60;
+    }
+    const lp = (n === 1 && generalComment) ? 'Lời phê: ' + generalComment
+             : (r && r.loi_phe_trang ? `Trang ${n}: ${r.loi_phe_trang}` : '');
+    if (lp) wrapText(lp, 15, w - topRight - 50).slice(0, 3).forEach((l, i) => add(l, 24, 32 + i * 20, 15, false));
+
+    if (r) {
+      let last = -99;
+      r.cac_cau.forEach(c => {
+        if (!(c.diem_toi_da > 0)) return;
+        let y = c.vi_tri_y * h;
+        if (y - last < 32) y = last + 32;
+        last = y;
+        const mark = c.ket_qua.startsWith('dung') ? '✔' : c.ket_qua.startsWith('sai') ? '✘' : '≈';
+        const t = `${mark} ${fmt(c.diem)}/${fmt(c.diem_toi_da)}`;
+        add(t, w - textW(t, 15) - 24, Math.min(y, h - 12), 15, true);
+      });
+    }
+    pageAnnotations[n] = keep;
+  }
+  if (pdfJsDoc && $('pdfDrawCanvas')) restorePageAnnotations(currentPdfPage);
+}
+
+/* Bảng kết quả chi tiết dưới màn hình chấm */
+function renderAiReport() {
+  const el = $('aiReport'); if (!el) return;
+  const pgs = Object.keys(gradeResults).map(Number).sort((a, b) => a - b);
+  if (!pgs.length) { el.innerHTML = ''; return; }
+  const tot = calcTotals();
+  const kq = k => k.startsWith('dung') ? '<span class="badge bg-success">Đúng</span>'
+                : k.startsWith('sai') ? '<span class="badge bg-danger">Sai</span>'
+                : '<span class="badge bg-warning text-dark">Một phần</span>';
+  el.innerHTML = `<div class="${card}">
+    <div class="d-flex flex-wrap align-items-center gap-3 mb-2"><h6 class="fw-bold text-primary m-0">📋 KẾT QUẢ CHẤM CHI TIẾT</h6>
+      <span class="badge bg-danger fs-6">TỔNG: ${fmt(tot.final)}/${fmt(tot.scale)}</span>
+      <small class="text-muted">(${fmt(tot.got)}/${fmt(tot.max)} điểm gốc · đã chấm ${pgs.length}/${totalPdfPages} trang)</small></div>
+    ${generalComment ? `<div class="alert alert-light border small py-2"><b>Lời phê chung:</b> ${esc(generalComment)}</div>` : ''}
+    ${pgs.map(n => { const r = gradeResults[n]; return `<div class="mb-3">
+      <div class="fw-bold small text-secondary mb-1">Trang ${n}${r.trang_trong ? ' — (trang trống)' : ''} <button class="btn btn-sm btn-link p-0 ms-2" onclick="changePdfPageTo(${n})">xem trang</button></div>
+      ${r.cac_cau.length ? `<div class="table-responsive"><table class="table table-sm table-bordered align-middle mb-0 small"><thead class="table-light"><tr><th>Câu</th><th>Điểm</th><th>KQ</th><th>Nhận xét</th><th>Lỗi sai</th><th>Gợi ý</th></tr></thead><tbody>${r.cac_cau.map(c => `<tr><td class="fw-bold text-nowrap">${esc(c.cau)}</td><td class="text-nowrap">${fmt(c.diem)}/${fmt(c.diem_toi_da)}</td><td>${kq(c.ket_qua)}</td><td>${esc(c.nhan_xet)}</td><td class="text-danger">${esc(c.loi_sai)}</td><td class="text-success">${esc(c.goi_y)}</td></tr>`).join('')}</tbody></table></div>` : ''}</div>`; }).join('')}
+  </div>`;
+}
+
+async function changePdfPageTo(n) {
+  currentPdfPage = n;
+  await renderCurrentPdfPage();
+  $('content').scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function setAiBusy(b) {
+  aiBusy = b;
+  ['btnAiGrade', 'btnAiAll'].forEach(i => { const e = $(i); if (e) e.disabled = b; });
+  const s = $('btnAiStop'); if (s) s.classList.toggle('d-none', !b);
+}
+const spinHtml = t => `<span class="text-primary"><i class="fas fa-spinner fa-spin"></i> ${t}</span>`;
+
+/* Nút "Chấm trang này" */
 async function gradeWithAi() {
   if (!pdfJsDoc) return alert('Vui lòng chọn file PDF bài làm của học sinh trước!');
-
-  const btn = $('btnAiGrade');
-  const status = $('aiGradeStatus');
-  const rubric = ($('aiRubric')?.value || '').trim();
-
-  btn.disabled = true;
-  status.innerHTML = `<span class="text-primary"><i class="fas fa-spinner fa-spin"></i> Gemini đang đọc & chấm bài trang ${currentPdfPage}...</span>`;
-
+  if (aiBusy) return;
+  setAiBusy(true);
+  const st = $('aiGradeStatus'), n = currentPdfPage;
   try {
-    const renderCanvas = $('pdfRenderCanvas');
-    const base64Image = renderCanvas.toDataURL('image/jpeg', 0.85).split(',')[1];
-
-    const promptText = `Bạn là một giáo viên kinh nghiệm tại Việt Nam. Hãy đọc hình ảnh bài làm tự luận này của học sinh trên trang hiện tại và chấm điểm.
-${rubric ? 'YÊU CẦU / ĐÁP ÁN THAM CHIẾU: ' + rubric : ''}
-Hãy đánh giá công tâm, chính xác.
-Trả về DUY NHẤT một chuỗi JSON chuẩn (không dùng markdown code fence), theo định dạng sau:
-{
-  "diem": "8.5/10",
-  "loi_phe": "Lời phê ngắn gọn của giáo viên (tối đa 25 từ)",
-  "chi_tiet": "Nhận xét chi tiết ưu/nhược điểm",
-  "danh_gia_nhanh": "✔ ĐÚNG"
-}`;
-
-    const payload = {
-      contents: [{
-        parts: [
-          { text: promptText },
-          { inlineData: { mimeType: "image/jpeg", data: base64Image } }
-        ]
-      }],
-      generationConfig: { responseMimeType: "application/json" }
-    };
-
-    const jsonRes = await callGemini(payload);
-
-    const raw = jsonRes.candidates?.[0]?.content?.parts?.[0]?.text || "{}";
-    const result = JSON.parse(raw.replace(/```json|```/g, '').trim());
-
-    // Đóng dấu mực đỏ lên trang bài làm của học sinh
-    const canvas = $('pdfDrawCanvas');
-    const ctx = canvas.getContext('2d');
-
-    // 1. Đóng khung điểm số ở góc trên bên phải
-    const scoreText = `ĐIỂM: ${result.diem || 'Đạt'}`;
-    const scoreX = Math.max(canvas.width - 180, 20);
-    const scoreY = 45;
-    drawTextOnCanvas(ctx, scoreText, scoreX, scoreY, 20, true);
-    saveAction(currentPdfPage, { type: 'text', text: scoreText, x: scoreX, y: scoreY, size: 20, isScore: true });
-
-    // 2. Ghi lời phê của giáo viên ở đầu trang bên trái
-    const commentText = `Lời phê: ${result.loi_phe || 'Bài làm tốt'}`;
-    const commentX = 30;
-    const commentY = 45;
-    drawTextOnCanvas(ctx, commentText, commentX, commentY, 15, false);
-    saveAction(currentPdfPage, { type: 'text', text: commentText, x: commentX, y: commentY, size: 15 });
-
-    // 3. Đóng dấu nhận xét
-    if (result.danh_gia_nhanh) {
-      const stampX = 30;
-      const stampY = 80;
-      drawTextOnCanvas(ctx, result.danh_gia_nhanh, stampX, stampY, 16, false);
-      saveAction(currentPdfPage, { type: 'text', text: result.danh_gia_nhanh, x: stampX, y: stampY, size: 16 });
-    }
-
-    status.innerHTML = `<span class="text-success"><i class="fas fa-check-circle"></i> Đã chấm xong trang ${currentPdfPage}: <b>${esc(result.diem)}</b></span>`;
-    alert(`🎉 KẾT QUẢ CHẤM CỦA GEMINI (Trang ${currentPdfPage}):\n\n- Điểm số: ${result.diem}\n- Lời phê: ${result.loi_phe}\n- Nhận xét chi tiết: ${result.chi_tiet || 'Không có'}\n\nĐã tự động đóng dấu điểm đỏ và lời phê vào bài!`);
+    st.innerHTML = spinHtml(`Gemini đang chấm chi tiết trang ${n}...`);
+    gradeResults[n] = await aiGradePage(n);
+    await stampAiAnnotations();
+    renderAiReport();
+    st.innerHTML = `<span class="text-success"><i class="fas fa-check-circle"></i> Đã chấm xong trang ${n}</span>`;
   } catch (err) {
-    status.innerHTML = `<span class="text-danger"><i class="fas fa-exclamation-triangle"></i> ${esc(err.message)}</span>`;
+    st.innerHTML = `<span class="text-danger"><i class="fas fa-exclamation-triangle"></i> ${esc(err.message)}</span>`;
   }
-  btn.disabled = false;
+  setAiBusy(false);
+}
+
+/* Nút "AI CHẤM TẤT CẢ TRANG" */
+async function gradeAllPages() {
+  if (!pdfJsDoc) return alert('Vui lòng chọn file PDF bài làm của học sinh trước!');
+  if (aiBusy) return;
+  setAiBusy(true); aiCancel = false; gradeResults = {}; generalComment = '';
+  const st = $('aiGradeStatus'), failed = [];
+  let lastErr = '';
+
+  for (let n = 1; n <= totalPdfPages; n++) {
+    if (aiCancel) break;
+    st.innerHTML = spinHtml(`Đang chấm trang ${n}/${totalPdfPages}...`);
+    try { gradeResults[n] = await aiGradePage(n); renderAiReport(); }
+    catch (e) { failed.push(n); lastErr = e.message; console.error('Trang ' + n, e); }
+    if (n < totalPdfPages) await wait(1200);   // giãn cách để tránh bị giới hạn tốc độ
+  }
+
+  const done = Object.keys(gradeResults).length;
+  if (done && !aiCancel) {
+    st.innerHTML = spinHtml('Đang viết lời phê chung...');
+    try {
+      const tot = calcTotals();
+      const sum = Object.keys(gradeResults).map(Number).sort((a, b) => a - b).map(n => {
+        const r = gradeResults[n];
+        return `Trang ${n}: ${r.loi_phe_trang}. ` + r.cac_cau.map(c => `${c.cau} ${fmt(c.diem)}/${fmt(c.diem_toi_da)}`).join(', ');
+      }).join('\n');
+      const j = await callGemini({ contents: [{ parts: [{ text: `Bạn là giáo viên. Tổng kết bài làm tự luận của học sinh với tổng điểm ${fmt(tot.final)}/${fmt(tot.scale)}. Kết quả từng trang:\n${sum}\nHãy viết lời phê chung bằng tiếng Việt (tối đa 35 từ): nêu điểm mạnh, điểm yếu chính và lời khuyên. Chỉ trả về lời phê, không thêm gì khác.` }] }] });
+      generalComment = (j.candidates?.[0]?.content?.parts?.[0]?.text || '').replace(/\s+/g, ' ').trim();
+    } catch (e) { /* không có lời phê chung thì dùng lời phê từng trang */ }
+  }
+
+  if (done) { await stampAiAnnotations(); renderAiReport(); }
+  const tot = calcTotals();
+  let msg = aiCancel ? `⏹ Đã dừng — chấm được ${done}/${totalPdfPages} trang.` : `✅ Đã chấm ${done}/${totalPdfPages} trang — ĐIỂM: ${fmt(tot.final)}/${fmt(tot.scale)}.`;
+  if (failed.length) msg += ` ⚠ Trang lỗi: ${failed.join(', ')} (${lastErr}). Mở trang đó rồi bấm "Chấm trang này" để chấm lại.`;
+  st.innerHTML = `<span class="${failed.length ? 'text-warning' : 'text-success'}">${esc(msg)}</span>`;
+  setAiBusy(false);
+}
+
+/* Phiếu nhận xét chi tiết (vẽ bằng canvas để hiển thị đúng tiếng Việt) -> gắn vào cuối file PDF xuất ra */
+function buildReportCanvases() {
+  const W = 1190, H = 1684, M = 80, pages = [], tot = calcTotals();
+  let c, x, y;
+  const np = () => { c = document.createElement('canvas'); c.width = W; c.height = H; x = c.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0, 0, W, H); y = M; pages.push(c); };
+  const put = (t, size, color, bold, indent = 0) => {
+    const f = `${bold ? 'bold ' : ''}${size}px "${FONT}`;
+    x.font = f;
+    wrapLines(x, t, W - 2 * M - indent).forEach(l => {
+      if (y + size > H - M) { np(); x.font = f; }
+      x.fillStyle = color; x.fillText(l, M + indent, y + size); y += size * 1.45;
+    });
+  };
+  np();
+  put('PHIẾU NHẬN XÉT CHI TIẾT BÀI TỰ LUẬN', 36, '#1a365d', true); y += 6;
+  put(`Ngày chấm: ${new Date().toLocaleDateString('vi-VN')}`, 22, '#666', false); y += 10;
+  put(`Tổng điểm: ${fmt(tot.final)}/${fmt(tot.scale)}   (${fmt(tot.got)}/${fmt(tot.max)} điểm gốc)`, 30, '#c53030', true);
+  if (generalComment) put('Lời phê chung: ' + generalComment, 26, '#111', false);
+  y += 14;
+  Object.keys(gradeResults).map(Number).sort((a, b) => a - b).forEach(n => {
+    const r = gradeResults[n];
+    put(`Trang ${n}${r.trang_trong ? ' (trang trống)' : ''}`, 28, '#2b6cb0', true);
+    r.cac_cau.forEach(q => {
+      put(`${q.cau}: ${fmt(q.diem)}/${fmt(q.diem_toi_da)} điểm`, 26, '#111', true, 10);
+      if (q.nhan_xet) put('Nhận xét: ' + q.nhan_xet, 24, '#222', false, 30);
+      if (q.loi_sai) put('Lỗi sai: ' + q.loi_sai, 24, '#c53030', false, 30);
+      if (q.goi_y) put('Gợi ý: ' + q.goi_y, 24, '#276749', false, 30);
+      y += 8;
+    });
+    y += 10;
+  });
+  return pages;
 }
 
 async function exportGradedPdf() {
@@ -991,14 +1176,15 @@ async function exportGradedPdf() {
   for (let i = 1; i <= totalPages; i++) {
     const actions = pageAnnotations[i];
     if (actions && actions.length > 0) {
-      const tempCanvas = document.createElement('canvas');
       const targetPage = pdfDoc.getPage(i - 1);
       const { width, height } = targetPage.getSize();
+      const dims = pageDims[i] || { w: $('pdfDrawCanvas').width };
 
-      tempCanvas.width = width * 1.5;
-      tempCanvas.height = height * 1.5;
+      const tempCanvas = document.createElement('canvas');
+      tempCanvas.width = width * 2;
+      tempCanvas.height = height * 2;
       const ctx = tempCanvas.getContext('2d');
-      const ratio = tempCanvas.width / $('pdfDrawCanvas').width;
+      const ratio = tempCanvas.width / dims.w;
 
       ctx.scale(ratio, ratio);
       ctx.strokeStyle = '#e53e3e';
@@ -1014,20 +1200,23 @@ async function exportGradedPdf() {
           ctx.lineTo(act.x, act.y);
           ctx.stroke();
         } else if (act.type === 'text') {
-          drawTextOnCanvas(ctx, act.text, act.x, act.y, act.size||16, act.isScore||false);
+          drawTextOnCanvas(ctx, act.text, act.x, act.y, act.size || 16, act.isScore || false);
         }
       });
 
       const pngUrl = tempCanvas.toDataURL('image/png');
       const pngImageBytes = await fetch(pngUrl).then(res => res.arrayBuffer());
       const pngImage = await pdfDoc.embedPng(pngImageBytes);
+      targetPage.drawImage(pngImage, { x: 0, y: 0, width: width, height: height });
+    }
+  }
 
-      targetPage.drawImage(pngImage, {
-        x: 0,
-        y: 0,
-        width: width,
-        height: height,
-      });
+  // Thêm phiếu nhận xét chi tiết vào cuối file nếu AI đã chấm
+  if (Object.keys(gradeResults).length) {
+    for (const cv of buildReportCanvases()) {
+      const img = await pdfDoc.embedPng(await fetch(cv.toDataURL('image/png')).then(r => r.arrayBuffer()));
+      const pg = pdfDoc.addPage([595.28, 841.89]);
+      pg.drawImage(img, { x: 0, y: 0, width: 595.28, height: 841.89 });
     }
   }
 
