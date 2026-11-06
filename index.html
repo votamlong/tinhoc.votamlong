@@ -1,5 +1,8 @@
 <!DOCTYPE html>
-<html lang="vi"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>EduClass Pro - Bản độc lập đầy đủ</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
@@ -13,30 +16,55 @@ body{background:#f0f2f5;font-family:'Segoe UI',Tahoma,sans-serif}
 #sidebar{width:270px;min-width:270px}.big{font-size:3rem;font-weight:800;color:#0d6efd;text-align:center;min-height:90px}
 .seat{cursor:pointer;border:2px solid #eee;border-radius:12px;padding:8px;text-align:center;font-size:12px;background:#fff}.seat.sel{border-color:#dc3545}.seat.hit{background:#fff3cd;border-color:#ffc107}
 @media(max-width:768px){#sidebar{position:fixed;left:-270px;top:0;bottom:0;z-index:999;transition:.3s}#sidebar.open{left:0}}
-</style></head><body>
-<div id="login" class="d-flex align-items-center justify-content-center vh-100"><div class="card shadow-lg p-5 border-0 rounded-4" style="width:400px">
-<div class="text-center mb-4"><i class="fas fa-school fa-4x text-primary mb-2"></i><h3 class="fw-bold">EduClass <span class="text-primary">Pro</span></h3></div>
-<input id="email" class="form-control mb-2" value="admin@edu.vn"><input id="pass" type="password" class="form-control mb-2" value="admin123" onkeydown="if(event.key==='Enter')login()">
-<div id="err" class="text-danger small mb-2"></div><button class="btn btn-primary w-100 rounded-pill fw-bold" onclick="login()">ĐĂNG NHẬP</button></div></div>
+</style>
+</head>
+<body>
+<div id="login" class="d-flex align-items-center justify-content-center vh-100">
+  <div class="card shadow-lg p-5 border-0 rounded-4" style="width:400px">
+    <div class="text-center mb-4">
+      <i class="fas fa-school fa-4x text-primary mb-2"></i>
+      <h3 class="fw-bold">EduClass <span class="text-primary">Pro</span></h3>
+    </div>
+    <input id="email" class="form-control mb-2" value="admin@edu.vn">
+    <input id="pass" type="password" class="form-control mb-2" value="admin123" onkeydown="if(event.key==='Enter')login()">
+    <div id="err" class="text-danger small mb-2"></div>
+    <button class="btn btn-primary w-100 rounded-pill fw-bold" onclick="login()">ĐĂNG NHẬP</button>
+  </div>
+</div>
+
 <div id="app" class="d-none vh-100 d-flex overflow-hidden">
-<div id="sidebar" class="bg-white border-end d-flex flex-column">
-<div class="p-3 fw-bold text-primary fs-5 border-bottom"><i class="fas fa-graduation-cap text-warning me-2"></i>EduClass</div>
-<div class="p-2"><input id="msearch" class="form-control form-control-sm" placeholder="🔍 Tìm chức năng..." oninput="filterMenu()"></div>
-<div id="menu" class="flex-grow-1 overflow-auto px-2"></div>
-<div class="p-3 border-top bg-light"><div id="uname" class="fw-bold small"></div><div id="urole" class="text-muted small mb-2"></div><button class="btn btn-sm btn-outline-danger w-100 rounded-pill" onclick="logout()">Thoát</button></div></div>
-<div class="flex-grow-1 d-flex flex-column overflow-hidden"><div class="bg-white border-bottom px-3 py-3 d-flex align-items-center gap-3">
-<button class="btn btn-outline-primary d-md-none" onclick="$('sidebar').classList.toggle('open')"><i class="fas fa-bars"></i></button><h5 id="title" class="m-0 fw-bold text-secondary text-uppercase"></h5></div>
-<div id="content" class="p-3 overflow-auto flex-grow-1"></div></div></div>
+  <div id="sidebar" class="bg-white border-end d-flex flex-column">
+    <div class="p-3 fw-bold text-primary fs-5 border-bottom"><i class="fas fa-graduation-cap text-warning me-2"></i>EduClass</div>
+    <div class="p-2"><input id="msearch" class="form-control form-control-sm" placeholder="🔍 Tìm chức năng..." oninput="filterMenu()"></div>
+    <div id="menu" class="flex-grow-1 overflow-auto px-2"></div>
+    <div class="p-3 border-top bg-light">
+      <div id="uname" class="fw-bold small"></div>
+      <div id="urole" class="text-muted small mb-2"></div>
+      <button class="btn btn-sm btn-outline-danger w-100 rounded-pill" onclick="logout()">Thoát</button>
+    </div>
+  </div>
+  <div class="flex-grow-1 d-flex flex-column overflow-hidden">
+    <div class="bg-white border-bottom px-3 py-3 d-flex align-items-center gap-3">
+      <button class="btn btn-outline-primary d-md-none" onclick="$('sidebar').classList.toggle('open')"><i class="fas fa-bars"></i></button>
+      <h5 id="title" class="m-0 fw-bold text-secondary text-uppercase"></h5>
+    </div>
+    <div id="content" class="p-3 overflow-auto flex-grow-1"></div>
+  </div>
+</div>
+
 <script>
 /* ===== DỮ LIỆU (localStorage) ===== */
 const KEY='educlass_full_v1';
-const SEED={users:[{email:'admin@edu.vn',pass:'admin123',role:'ADMIN',name:'Admin Tổng',sid:''}],
-students:[{id:'HS01',name:'Nguyễn Văn A',lop:'9A',dob:'2012-03-12',hl:'Giỏi',hk:'Tốt',bt:'X'},{id:'HS02',name:'Trần Thị B',lop:'9A',dob:'2012-11-20',hl:'Khá',hk:'Tốt',bt:''}],
-gvcn:[{lop:'9A',gv:'Thầy Nguyễn Văn B'},{lop:'9B',gv:'Cô Trần Thị C'}],
-loi:[{code:'L01',name:'Đi học muộn',pts:2},{code:'L02',name:'Không làm bài',pts:3},{code:'L03',name:'Mất trật tự',pts:2}],
-mon:['Toán','Ngữ văn','Tiếng Anh','Vật lí','Hóa học','Sinh học','Lịch sử','Địa lí','Tin học','GDCD'].map(name=>({name})),
-tiet:[1,2,3,4,5].map(n=>({name:'Tiết '+n+' sáng'})).concat([1,2,3,4,5].map(n=>({name:'Tiết '+n+' chiều'}))),
-discipline:[],attendance:[],fund:[],tkb:{},seat:{}};
+const SEED={
+  users:[{email:'admin@edu.vn',pass:'admin123',role:'ADMIN',name:'Admin Tổng',sid:''}],
+  students:[{id:'HS01',name:'Nguyễn Văn A',lop:'9A',dob:'2012-03-12',hl:'Giỏi',hk:'Tốt',bt:'X'},{id:'HS02',name:'Trần Thị B',lop:'9A',dob:'2012-11-20',hl:'Khá',hk:'Tốt',bt:''}],
+  gvcn:[{lop:'9A',gv:'Thầy Nguyễn Văn B'},{lop:'9B',gv:'Cô Trần Thị C'}],
+  loi:[{code:'L01',name:'Đi học muộn',pts:2},{code:'L02',name:'Không làm bài',pts:3},{code:'L03',name:'Mất trật tự',pts:2}],
+  mon:['Toán','Ngữ văn','Tiếng Anh','Vật lí','Hóa học','Sinh học','Lịch sử','Địa lí','Tin học','GDCD'].map(name=>({name})),
+  tiet:[1,2,3,4,5].map(n=>({name:'Tiết '+n+' sáng'})).concat([1,2,3,4,5].map(n=>({name:'Tiết '+n+' chiều'}))),
+  discipline:[],attendance:[],fund:[],tkb:{},seat:{},quizzes:[]
+};
+
 let db=JSON.parse(localStorage.getItem(KEY)||'null')||structuredClone(SEED);
 const save=()=>localStorage.setItem(KEY,JSON.stringify(db)),D=k=>db[k]||(db[k]=[]);save();
 const $=id=>document.getElementById(id),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -48,7 +76,8 @@ const stOf=l=>D('students').filter(s=>!l||s.lop===l);
 const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
 let USER=null,chart=null;
 function dl(n,t,m){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([t],{type:m}));a.download=n;a.click()}
-/* ===== MENU: id|Tên|icon|quyền(A=admin,C=admin+GVCN,G=giáo viên,M=mọi người)|chức năng ===== */
+
+/* ===== MENU ===== */
 const MENU=`dashboard|Tổng quan|th-large|M|dash
 user_manager|Quản lý Tài khoản|users-cog|A|crud:users
 boarding_kitchen_2627|Quản Lý Suất Ăn Bán Trú|utensils|A|crud:boarding
@@ -149,101 +178,141 @@ violation_search_adv|Tra cứu vi phạm theo HS|search-plus|C|rep:all
 quiz_gemini|Soạn đề trắc nghiệm AI|robot|G|quiz
 my_profile|Hồ sơ học tập|user-graduate|S|profile
 class_fund|Quỹ Lớp|wallet|M|crud:fund`.split('\n').map(l=>{const[id,t,i,a,h]=l.split('|');return{id,t,i,a,h}});
-const ROLES={HS:'dashboard,homework_portal_2627,my_profile,sll_2627,timetable_2627,class_fund,notifications',
-LT:'dashboard,attendance,discipline,homework_portal_2627,duty_schedule,class_duty,my_profile,timetable_2627,class_fund,notifications',
-BAOVE:'dashboard,security_gate_2627,facility_inspection_2627,late_pass_2627',
-VANTHU:'dashboard,clerical_documents_2627,security_gate_2627,student_manager',
-THIETBI:'dashboard,equipment_loan_2627,computer_lab_2627,csvc_manager,facility_inspection_2627',
-THUVIEN:'dashboard,library_management_2627',YTE:'dashboard,health_2627,late_pass_2627',
-GIAMTHI:'dashboard,discipline,violation_grid,violation_processing_page,advanced_discipline,positive_discipline_2627,global_violations_today,violation_summary_today,late_pass_2627,security_gate_2627,attendance_matrix'};
+
+const ROLES={
+  HS:'dashboard,homework_portal_2627,my_profile,sll_2627,timetable_2627,class_fund,notifications',
+  LT:'dashboard,attendance,discipline,homework_portal_2627,duty_schedule,class_duty,my_profile,timetable_2627,class_fund,notifications',
+  BAOVE:'dashboard,security_gate_2627,facility_inspection_2627,late_pass_2627',
+  VANTHU:'dashboard,clerical_documents_2627,security_gate_2627,student_manager',
+  THIETBI:'dashboard,equipment_loan_2627,computer_lab_2627,csvc_manager,facility_inspection_2627',
+  THUVIEN:'dashboard,library_management_2627',YTE:'dashboard,health_2627,late_pass_2627',
+  GIAMTHI:'dashboard,discipline,violation_grid,violation_processing_page,advanced_discipline,positive_discipline_2627,global_violations_today,violation_summary_today,late_pass_2627,security_gate_2627,attendance_matrix'
+};
 ROLES.PH=ROLES.HOCSINH=ROLES.HS;ROLES.LOPTRUONG=ROLES.LOPTRUONG1=ROLES.LT;ROLES.TO_BAOVE=ROLES.BAOVE;ROLES.NHANVIENTHIETBI=ROLES.THIETBI;
-function allowed(){const r=String(USER.role).toUpperCase();
- if(ROLES[r]){const s=ROLES[r].split(',');return MENU.filter(m=>s.includes(m.id))}
- return MENU.filter(m=>r==='ADMIN'||m.a==='M'||(m.a==='G')||(m.a==='C'&&r.startsWith('GVCN')))}
-function login(){const u=D('users').find(u=>u.email.toLowerCase()===$('email').value.trim().toLowerCase()&&u.pass===$('pass').value);
- if(!u)return $('err').innerText='Sai Email hoặc Mật khẩu!';USER=u;sessionStorage.setItem('u',u.email);boot()}
+
+function allowed(){
+  const r=String(USER.role).toUpperCase();
+  if(ROLES[r]){const s=ROLES[r].split(',');return MENU.filter(m=>s.includes(m.id))}
+  return MENU.filter(m=>r==='ADMIN'||m.a==='M'||(m.a==='G')||(m.a==='C'&&r.startsWith('GVCN')));
+}
+
+function login(){
+  const u=D('users').find(u=>u.email.toLowerCase()===$('email').value.trim().toLowerCase()&&u.pass===$('pass').value);
+  if(!u)return $('err').innerText='Sai Email hoặc Mật khẩu!';
+  USER=u;sessionStorage.setItem('u',u.email);boot();
+}
 function logout(){sessionStorage.removeItem('u');location.reload()}
 let MY=[];
-function boot(){$('login').classList.add('d-none');$('app').classList.remove('d-none');$('uname').innerText=USER.name;$('urole').innerText=USER.role;
- MY=allowed();$('menu').innerHTML=MY.map(m=>`<div class="list-group-item mi" data-id="${m.id}" onclick="go('${m.id}')"><i class="fas fa-${m.i} text-primary me-2"></i>${esc(m.t)}</div>`).join('');go('dashboard')}
+function boot(){
+  $('login').classList.add('d-none');$('app').classList.remove('d-none');
+  $('uname').innerText=USER.name;$('urole').innerText=USER.role;
+  MY=allowed();
+  $('menu').innerHTML=MY.map(m=>`<div class="list-group-item mi" data-id="${m.id}" onclick="go('${m.id}')"><i class="fas fa-${m.i} text-primary me-2"></i>${esc(m.t)}</div>`).join('');
+  go('dashboard');
+}
 function filterMenu(){const q=$('msearch').value.toLowerCase();document.querySelectorAll('.mi').forEach(e=>e.style.display=e.innerText.toLowerCase().includes(q)?'':'none')}
 window.onload=()=>{const e=sessionStorage.getItem('u'),u=e&&D('users').find(x=>x.email===e);if(u){USER=u;boot()}};
-function go(id){const m=MENU.find(x=>x.id===id);document.querySelectorAll('.mi').forEach(e=>e.classList.toggle('active',e.dataset.id===id));
- $('title').innerText=m.t;$('sidebar').classList.remove('open');const[h,p]=m.h.split(':');
- (h==='crud'?vCrud:h==='pick'?vPick:h==='rep'?vRep:h==='trend'?vTrend:VIEWS[h])(p)}
-/* ===== CRUD TỔNG QUÁT: khai báo trường 'khóa:Nhãn:kiểu' (c=lớp, s=học sinh, d=ngày, n=số, a=văn bản dài, L=lỗi, M=môn, T=tiết, o=a/b/c) ===== */
-const F={users:'email:Email,pass:Mật khẩu,role:Vai trò:o=ADMIN/GVCN/GVBM/LT/HS/PH/BAOVE/VANTHU/THIETBI/THUVIEN/YTE/GIAMTHI,name:Họ tên,sid:Mã HS liên kết',
-gvcn:'lop:Lớp,gv:Tên GVCN',gvbm:'gv:Tên GVBM,mon:Môn:M',loi:'code:Mã lỗi,name:Tên lỗi,pts:Điểm trừ:n',tiet:'name:Tên tiết',mon:'name:Tên môn',
-students:'id:Mã HS,name:Họ tên,lop:Lớp:c,dob:Ngày sinh:d,hl:Học lực:o=Giỏi/Khá/TB,hk:Hạnh kiểm:o=Tốt/Khá/TB/Yếu,bt:Bán trú:o=/X',
-discipline:'lop:Lớp:c,hs:Học sinh:s,type:Lỗi:L,note:Ghi chú:a',
-advdisc:'ngay:Ngày:d,lop:Lớp:c,hs:Học sinh:s,type:Lỗi:L,tiet:Tiết:T,mon:Môn:M,gv:GVBM,note:Ghi chú/Điểm trừ:a',
-posdisc:'ngay:Ngày:d,lop:Lớp:c,hs:Học sinh:s,type:Lỗi:L,goc:Nguyên nhân gốc rễ (tâm lý):a,xl:Hướng xử lý tích cực:a,tiet:Tiết:T,mon:Môn:M,gv:GVBM,note:Ghi chú:a',
-handling:'ngay:Ngày:d,lop:Lớp:c,hs:Học sinh:s,type:Lỗi:L,kq:Kết quả xử lý:a',
-advatt:'ngay:Ngày:d,lop:Lớp:c,hs:Học sinh:s,status:Trạng thái:o=C/V,tiet:Tiết:T,mon:Môn:M,gv:GVBM,note:Ghi chú',
-fund:'lop:Lớp:c,content:Nội dung,loai:Loại:o=Thu/Chi,amt:Số tiền:n',salary:'content:Nội dung,loai:Loại:o=Thu/Chi,amt:Số tiền:n,tt:Trạng thái:o=Chưa nhận/Đã nhận',
-tuition:'lop:Lớp:c,hs:Học sinh:s,content:Khoản thu,loai:Loại:o=Thu/Chi,amt:Số tiền:n,tt:Tình trạng:o=Chưa nộp/Đã nộp',
-scores:'lop:Lớp:c,hs:Học sinh:s,mon:Môn:M,tx1:TX1:n,tx2:TX2:n,tx3:TX3:n,tx4:TX4:n,gk:Giữa kỳ:n,ck:Cuối kỳ:n,nx:Nhận xét',
-boarding:'ngay:Ngày:d,lop:Lớp:c,suat:Số suất ăn:n,note:Ghi chú',noise:'ngay:Ngày:d,lop:Lớp:c,db:Mức ồn (dB):n,hu:Hú còi:o=Không/Có,note:Ghi chú',
-meeting:'lop:Lớp:c,ngay:Ngày họp:d,gio:Giờ,dd:Địa điểm,nd:Nội dung mời:a',match:'giai:Giải đấu,a:Đội A,b:Đội B,sa:Điểm A:n,sb:Điểm B:n,tt:Trạng thái:o=Chưa đấu/Đang đấu/Kết thúc',
-clean:'lop:Lớp:c,thu:Thứ:o=T2/T3/T4/T5/T6/T7,to:Tổ,viec:Công việc',principal:'ngay:Ngày:d,nd:Nội dung chỉ đạo:a,tt:Trạng thái:o=Mới/Đang làm/Xong',
-pe:'lop:Lớp:c,hs:Học sinh:s,cc:Chiều cao (cm):n,cn:Cân nặng (kg):n,chay:Chạy (giây):n,note:Ghi chú',meetnote:'ngay:Ngày:d,to:Tổ,nd:Nội dung:a',
-ppct:'mon:Môn:M,lop:Lớp:c,tiet:Tiết số:n,bai:Tên bài,ngay:Ngày dạy:d,note:Ghi chú',worklog:'ngay:Ngày:d,nd:Công việc:a',
-csvc:'phong:Phòng,tb:Thiết bị,loi:Mô tả lỗi,ngay:Ngày báo:d,nguoi:Người báo',
-homeroom:'lop:Lớp:c,hs:Học sinh:s,dm:Danh mục:o=Tư vấn tâm lý/Liên lạc PH/Khen thưởng/Vi phạm nghiêm trọng,nd:Nội dung:a,bp:Biện pháp,tt:Trạng thái:o=Đã xong/Đang theo dõi',
-sodb:'tuan:Tuần:n,ngay:Ngày:d,lop:Lớp:c,tiet:Tiết:T,mon:Môn:M,ppct:PPCT:n,nd:Nội dung bài dạy,nx:Nhận xét,xl:Xếp loại:o=Tốt/Khá/TB/Yếu,ky:Ký tên',
-groupemu:'ngay:Ngày:d,to:Tổ/Lớp,nd:Nội dung,diem:Điểm:n',duty:'lop:Lớp:c,cv:Chức vụ:o=Lớp trưởng/Lớp phó học tập/Lớp phó kỷ luật/Bí thư/Tổ trưởng,hs:Học sinh:s',
-health:'ngay:Ngày:d,lop:Lớp:c,hs:Học sinh:s,tc:Triệu chứng,xl:Xử lý,note:Ghi chú',sll:'ngay:Ngày:d,lop:Lớp:c,hs:Học sinh:s,nd:Nội dung liên lạc:a,ph:Phản hồi PH',
-teamtask:'ngay:Ngày:d,to:Tổ,nd:Việc cần làm:a,han:Hạn:d',teacherprofile:'tt:Mục thông tin,nd:Nội dung:a',rooms:'phong:Phòng,vt:Vị trí,mt:Mô tả',
-lab:'tb:Thiết bị,phong:Phòng,sl:Số lượng:n,tt:Tình trạng:o=Tốt/Hỏng/Đang sửa',bonus:'ngay:Ngày:d,lop:Lớp:c,hs:Học sinh:s,diem:Điểm cộng:n,ld:Lý do',
-inspect:'ngay:Ngày:d,phong:Phòng,tt:Kết quả:o=Đạt/Chưa đạt,note:Ghi chú',latepass:'lop:Lớp:c,hs:Học sinh:s,ld:Lý do,gio:Giờ vào lớp,nguoi:Người cấp',
-medical:'ngay:Ngày:d,lop:Lớp:c,hs:Học sinh:s,tc:Triệu chứng,gv:GV chuyển',docs:'so:Số hiệu,tt:Trích yếu,lv:Loại:o=Đến/Đi,ngay:Ngày:d,nx:Nơi nhận/gửi',
-loan:'tb:Thiết bị,nguoi:Người mượn,ngay:Ngày mượn:d,tra:Đã trả:o=Chưa/Rồi',library:'sach:Tên sách,nguoi:Người mượn,ngay:Ngày mượn:d,tra:Đã trả:o=Chưa/Rồi',
-itreg:'ngay:Ngày:d,viec:Công việc,nguoi:Người phụ trách,tt:Trạng thái:o=Chờ/Đang làm/Xong',homework:'ngay:Ngày:d,lop:Lớp:c,mon:Môn:M,bt:Bài tập:a,han:Hạn nộp:d',
-gate:'ngay:Ngày:d,gio:Giờ,ten:Họ tên,lh:Loại:o=Phụ huynh/Khách/Nhà cung cấp/Xe,ld:Lý do',notif:'tt:Tiêu đề,nd:Nội dung:a'};
+
+function go(id){
+  const m=MENU.find(x=>x.id===id);
+  document.querySelectorAll('.mi').forEach(e=>e.classList.toggle('active',e.dataset.id===id));
+  $('title').innerText=m.t;$('sidebar').classList.remove('open');
+  const[h,p]=m.h.split(':');
+  (h==='crud'?vCrud:h==='pick'?vPick:h==='rep'?vRep:h==='trend'?vTrend:VIEWS[h])(p);
+}
+
+/* ===== CRUD ===== */
+const F={
+  users:'email:Email,pass:Mật khẩu,role:Vai trò:o=ADMIN/GVCN/GVBM/LT/HS/PH/BAOVE/VANTHU/THIETBI/THUVIEN/YTE/GIAMTHI,name:Họ tên,sid:Mã HS liên kết',
+  gvcn:'lop:Lớp,gv:Tên GVCN',gvbm:'gv:Tên GVBM,mon:Môn:M',loi:'code:Mã lỗi,name:Tên lỗi,pts:Điểm trừ:n',tiet:'name:Tên tiết',mon:'name:Tên môn',
+  students:'id:Mã HS,name:Họ tên,lop:Lớp:c,dob:Ngày sinh:d,hl:Học lực:o=Giỏi/Khá/TB,hk:Hạnh kiểm:o=Tốt/Khá/TB/Yếu,bt:Bán trú:o=/X',
+  discipline:'lop:Lớp:c,hs:Học sinh:s,type:Lỗi:L,note:Ghi chú:a',
+  advdisc:'ngay:Ngày:d,lop:Lớp:c,hs:Học sinh:s,type:Lỗi:L,tiet:Tiết:T,mon:Môn:M,gv:GVBM,note:Ghi chú/Điểm trừ:a',
+  posdisc:'ngay:Ngày:d,lop:Lớp:c,hs:Học sinh:s,type:Lỗi:L,goc:Nguyên nhân gốc rễ (tâm lý):a,xl:Hướng xử lý tích cực:a,tiet:Tiết:T,mon:Môn:M,gv:GVBM,note:Ghi chú:a',
+  handling:'ngay:Ngày:d,lop:Lớp:c,hs:Học sinh:s,type:Lỗi:L,kq:Kết quả xử lý:a',
+  advatt:'ngay:Ngày:d,lop:Lớp:c,hs:Học sinh:s,status:Trạng thái:o=C/V,tiet:Tiết:T,mon:Môn:M,gv:GVBM,note:Ghi chú',
+  fund:'lop:Lớp:c,content:Nội dung,loai:Loại:o=Thu/Chi,amt:Số tiền:n',salary:'content:Nội dung,loai:Loại:o=Thu/Chi,amt:Số tiền:n,tt:Trạng thái:o=Chưa nhận/Đã nhận',
+  tuition:'lop:Lớp:c,hs:Học sinh:s,content:Khoản thu,loai:Loại:o=Thu/Chi,amt:Số tiền:n,tt:Tình trạng:o=Chưa nộp/Đã nộp',
+  scores:'lop:Lớp:c,hs:Học sinh:s,mon:Môn:M,tx1:TX1:n,tx2:TX2:n,tx3:TX3:n,tx4:TX4:n,gk:Giữa kỳ:n,ck:Cuối kỳ:n,nx:Nhận xét',
+  boarding:'ngay:Ngày:d,lop:Lớp:c,suat:Số suất ăn:n,note:Ghi chú',noise:'ngay:Ngày:d,lop:Lớp:c,db:Mức ồn (dB):n,hu:Hú còi:o=Không/Có,note:Ghi chú',
+  meeting:'lop:Lớp:c,ngay:Ngày họp:d,gio:Giờ,dd:Địa điểm,nd:Nội dung mời:a',match:'giai:Giải đấu,a:Đội A,b:Đội B,sa:Điểm A:n,sb:Điểm B:n,tt:Trạng thái:o=Chưa đấu/Đang đấu/Kết thúc',
+  clean:'lop:Lớp:c,thu:Thứ:o=T2/T3/T4/T5/T6/T7,to:Tổ,viec:Công việc',principal:'ngay:Ngày:d,nd:Nội dung chỉ đạo:a,tt:Trạng thái:o=Mới/Đang làm/Xong',
+  pe:'lop:Lớp:c,hs:Học sinh:s,cc:Chiều cao (cm):n,cn:Cân nặng (kg):n,chay:Chạy (giây):n,note:Ghi chú',meetnote:'ngay:Ngày:d,to:Tổ,nd:Nội dung:a',
+  ppct:'mon:Môn:M,lop:Lớp:c,tiet:Tiết số:n,bai:Tên bài,ngay:Ngày dạy:d,note:Ghi chú',worklog:'ngay:Ngày:d,nd:Công việc:a',
+  csvc:'phong:Phòng,tb:Thiết bị,loi:Mô tả lỗi,ngay:Ngày báo:d,nguoi:Người báo',
+  homeroom:'lop:Lớp:c,hs:Học sinh:s,dm:Danh mục:o=Tư vấn tâm lý/Liên lạc PH/Khen thưởng/Vi phạm nghiêm trọng,nd:Nội dung:a,bp:Biện pháp,tt:Trạng thái:o=Đã xong/Đang theo dõi',
+  sodb:'tuan:Tuần:n,ngay:Ngày:d,lop:Lớp:c,tiet:Tiết:T,mon:Môn:M,ppct:PPCT:n,nd:Nội dung bài dạy,nx:Nhận xét,xl:Xếp loại:o=Tốt/Khá/TB/Yếu,ky:Ký tên',
+  groupemu:'ngay:Ngày:d,to:Tổ/Lớp,nd:Nội dung,diem:Điểm:n',duty:'lop:Lớp:c,cv:Chức vụ:o=Lớp trưởng/Lớp phó học tập/Lớp phó kỷ luật/Bí thư/Tổ trưởng,hs:Học sinh:s',
+  health:'ngay:Ngày:d,lop:Lớp:c,hs:Học sinh:s,tc:Triệu chứng,xl:Xử lý,note:Ghi chú',sll:'ngay:Ngày:d,lop:Lớp:c,hs:Học sinh:s,nd:Nội dung liên lạc:a,ph:Phản hồi PH',
+  teamtask:'ngay:Ngày:d,to:Tổ,nd:Việc cần làm:a,han:Hạn:d',teacherprofile:'tt:Mục thông tin,nd:Nội dung:a',rooms:'phong:Phòng,vt:Vị trí,mt:Mô tả',
+  lab:'tb:Thiết bị,phong:Phòng,sl:Số lượng:n,tt:Tình trạng:o=Tốt/Hỏng/Đang sửa',bonus:'ngay:Ngày:d,lop:Lớp:c,hs:Học sinh:s,diem:Điểm cộng:n,ld:Lý do',
+  inspect:'ngay:Ngày:d,phong:Phòng,tt:Kết quả:o=Đạt/Chưa đạt,note:Ghi chú',latepass:'lop:Lớp:c,hs:Học sinh:s,ld:Lý do,gio:Giờ vào lớp,nguoi:Người cấp',
+  medical:'ngay:Ngày:d,lop:Lớp:c,hs:Học sinh:s,tc:Triệu chứng,gv:GV chuyển',docs:'so:Số hiệu,tt:Trích yếu,lv:Loại:o=Đến/Đi,ngay:Ngày:d,nx:Nơi nhận/gửi',
+  loan:'tb:Thiết bị,nguoi:Người mượn,ngay:Ngày mượn:d,tra:Đã trả:o=Chưa/Rồi',library:'sach:Tên sách,nguoi:Người mượn,ngay:Ngày mượn:d,tra:Đã trả:o=Chưa/Rồi',
+  itreg:'ngay:Ngày:d,viec:Công việc,nguoi:Người phụ trách,tt:Trạng thái:o=Chờ/Đang làm/Xong',homework:'ngay:Ngày:d,lop:Lớp:c,mon:Môn:M,bt:Bài tập:a,han:Hạn nộp:d',
+  gate:'ngay:Ngày:d,gio:Giờ,ten:Họ tên,lh:Loại:o=Phụ huynh/Khách/Nhà cung cấp/Xe,ld:Lý do',notif:'tt:Tiêu đề,nd:Nội dung:a'
+};
 const COLL={advdisc:'discipline',posdisc:'discipline',advatt:'attendance'};
 const COMP={scores:['ĐTB',r=>{const t=[r.tx1,r.tx2,r.tx3,r.tx4].filter(x=>x>0),n=t.length+(r.gk>0?2:0)+(r.ck>0?3:0);return n?((t.reduce((a,b)=>a+b,0)+2*r.gk+3*r.ck)/n).toFixed(1):'-'}]};
 const parseF=k=>F[k].split(',').map(x=>{const[a,l,t='t']=x.split(':');return{k:a,l,t}});
 let CK='',EDIT=null;
-function fld(f){const id='f_'+f.k,c='form-control form-control-sm',sel=(o)=>`<select id="${id}" class="form-select form-select-sm">${o}</select>`;
- const op=a=>a.map(x=>`<option>${esc(x)}</option>`).join('');
- if(f.t=='a')return`<textarea id="${id}" class="${c}" rows="2"></textarea>`;
- if(f.t=='n')return`<input id="${id}" type="number" step="any" class="${c}">`;
- if(f.t=='d')return`<input id="${id}" type="date" class="${c}" value="${f.k=='ngay'?today():''}">`;
- if(f.t=='c')return`<input id="${id}" list="cls" class="${c}" onchange="fillS()">`;
- if(f.t=='s')return sel('');
- if(f.t=='L')return sel(op(D('loi').map(x=>x.name)));if(f.t=='M')return sel(op(D('mon').map(x=>x.name)));if(f.t=='T')return sel(op(D('tiet').map(x=>x.name)));
- if(f.t[0]=='o')return sel(op(f.t.split('=')[1].split('/')));
- return`<input id="${id}" class="${c}">`}
+
+function fld(f){
+  const id='f_'+f.k,c='form-control form-control-sm',sel=(o)=>`<select id="${id}" class="form-select form-select-sm">${o}</select>`;
+  const op=a=>a.map(x=>`<option>${esc(x)}</option>`).join('');
+  if(f.t=='a')return`<textarea id="${id}" class="${c}" rows="2"></textarea>`;
+  if(f.t=='n')return`<input id="${id}" type="number" step="any" class="${c}">`;
+  if(f.t=='d')return`<input id="${id}" type="date" class="${c}" value="${f.k=='ngay'?today():''}">`;
+  if(f.t=='c')return`<input id="${id}" list="cls" class="${c}" onchange="fillS()">`;
+  if(f.t=='s')return sel('');
+  if(f.t=='L')return sel(op(D('loi').map(x=>x.name)));
+  if(f.t=='M')return sel(op(D('mon').map(x=>x.name)));
+  if(f.t=='T')return sel(op(D('tiet').map(x=>x.name)));
+  if(f.t[0]=='o')return sel(op(f.t.split('=')[1].split('/')));
+  return`<input id="${id}" class="${c}">`;
+}
+
 function fillS(v){const s=$('f_hs');if(!s)return;const l=$('f_lop');s.innerHTML=stOf(l?l.value:'').map(x=>`<option value="${esc(x.id)}">${esc(x.name)}</option>`).join('');if(v)s.value=v}
 const dtxt=v=>/^\d{4}-\d\d-\d\dT/.test(v)?v.slice(0,16).replace('T',' '):v;
-function vCrud(key){CK=key;EDIT=null;const fs=parseF(key);
- $('content').innerHTML=`<datalist id="cls">${classes().map(c=>`<option>${esc(c)}</option>`).join('')}</datalist>
- <div class="card p-3 mb-3 border-0 shadow-sm"><div class="row g-2">${fs.map(f=>`<div class="col-md-${f.t=='a'?6:3} col-6"><label class="small fw-bold">${f.l}</label>${fld(f)}</div>`).join('')}
- <div class="col-12"><button class="btn btn-primary btn-sm px-4" onclick="crudSave()">LƯU</button> <button class="btn btn-light btn-sm" onclick="vCrud(CK)">Hủy</button>
- <button class="btn btn-outline-secondary btn-sm float-end" onclick="crudCSV()"><i class="fas fa-file-csv"></i> CSV</button></div></div></div>
- ${fs.some(f=>f.k=='lop')?`<select id="cf" class="form-select form-select-sm w-auto mb-2" onchange="crudList()">${clsOpts(1)}</select>`:''}
- <div id="csum" class="mb-2"></div><div class="card table-responsive"><table class="table table-sm table-hover align-middle mb-0 small"><thead class="table-light"><tr>${fs.map(f=>`<th>${f.l}</th>`).join('')}${COMP[key]?`<th>${COMP[key][0]}</th>`:''}<th></th></tr></thead><tbody id="cl"></tbody></table></div>`;
- fillS();crudList()}
+
+function vCrud(key){
+  CK=key;EDIT=null;const fs=parseF(key);
+  $('content').innerHTML=`<datalist id="cls">${classes().map(c=>`<option>${esc(c)}</option>`).join('')}</datalist>
+  <div class="card p-3 mb-3 border-0 shadow-sm"><div class="row g-2">${fs.map(f=>`<div class="col-md-${f.t=='a'?6:3} col-6"><label class="small fw-bold">${f.l}</label>${fld(f)}</div>`).join('')}
+  <div class="col-12"><button class="btn btn-primary btn-sm px-4" onclick="crudSave()">LƯU</button> <button class="btn btn-light btn-sm" onclick="vCrud(CK)">Hủy</button>
+  <button class="btn btn-outline-secondary btn-sm float-end" onclick="crudCSV()"><i class="fas fa-file-csv"></i> CSV</button></div></div></div>
+  ${fs.some(f=>f.k=='lop')?`<select id="cf" class="form-select form-select-sm w-auto mb-2" onchange="crudList()">${clsOpts(1)}</select>`:''}
+  <div id="csum" class="mb-2"></div><div class="card table-responsive"><table class="table table-sm table-hover align-middle mb-0 small"><thead class="table-light"><tr>${fs.map(f=>`<th>${f.l}</th>`).join('')}${COMP[key]?`<th>${COMP[key][0]}</th>`:''}<th></th></tr></thead><tbody id="cl"></tbody></table></div>`;
+  fillS();crudList();
+}
+
 const coll=()=>D(COLL[CK]||CK);
 function rows(){const c=$('cf')?$('cf').value:'';return coll().map((r,i)=>({r,i})).filter(x=>!c||x.r.lop===c).filter(x=>CK!='advdisc'&&CK!='posdisc'&&CK!='discipline'||true)}
-function crudList(){const fs=parseF(CK),L=rows();
- $('cl').innerHTML=L.slice().reverse().map(({r,i})=>`<tr>${fs.map(f=>`<td>${esc(f.t=='s'?(r.name||r[f.k]):f.t=='n'||f.k=='pass'&&0?r[f.k]:dtxt(r[f.k]))}</td>`).join('')}${COMP[CK]?`<td class="fw-bold">${COMP[CK][1](r)}</td>`:''}
- <td class="text-nowrap"><button class="btn btn-sm text-primary" onclick="crudEdit(${i})"><i class="fas fa-edit"></i></button><button class="btn btn-sm text-danger" onclick="crudDel(${i})"><i class="fas fa-trash"></i></button></td></tr>`).join('')||'<tr><td colspan="20" class="text-center text-muted p-4">Chưa có dữ liệu</td></tr>';
- if(fs.some(f=>f.k=='amt')){const s=t=>L.filter(x=>x.r.loai==t).reduce((a,x)=>a+(x.r.amt||0),0);
-  $('csum').innerHTML=`<span class="badge bg-success me-1">Thu: ${vnd(s('Thu'))}</span><span class="badge bg-danger me-1">Chi: ${vnd(s('Chi'))}</span><span class="badge bg-primary">Tồn: ${vnd(s('Thu')-s('Chi'))}</span>`}}
-function crudSave(){const fs=parseF(CK),r={};fs.forEach(f=>{const v=$('f_'+f.k).value;r[f.k]=f.t=='n'?Number(v)||0:v.trim()});
- if(!fs.some(f=>f.t!='n'&&r[f.k]))return alert('Nhập dữ liệu!');
- if(r.hs){const s=D('students').find(x=>x.id==r.hs);if(s){r.id=s.id;r.name=s.name;r.lop=r.lop||s.lop}}
- if(CK=='advatt')r.status=r.status||'C';
- const old=EDIT!=null?coll()[EDIT]:{};Object.assign(old,r);if(!old.date)old.date=r.ngay||new Date().toISOString();if(r.ngay)old.date=r.ngay;old._by=USER.name;
- if(EDIT==null)coll().push(old);save();vCrud(CK)}
+function crudList(){
+  const fs=parseF(CK),L=rows();
+  $('cl').innerHTML=L.slice().reverse().map(({r,i})=>`<tr>${fs.map(f=>`<td>${esc(f.t=='s'?(r.name||r[f.k]):f.t=='n'||f.k=='pass'&&0?r[f.k]:dtxt(r[f.k]))}</td>`).join('')}${COMP[CK]?`<td class="fw-bold">${COMP[CK][1](r)}</td>`:''}
+  <td class="text-nowrap"><button class="btn btn-sm text-primary" onclick="crudEdit(${i})"><i class="fas fa-edit"></i></button><button class="btn btn-sm text-danger" onclick="crudDel(${i})"><i class="fas fa-trash"></i></button></td></tr>`).join('')||'<tr><td colspan="20" class="text-center text-muted p-4">Chưa có dữ liệu</td></tr>';
+  if(fs.some(f=>f.k=='amt')){const s=t=>L.filter(x=>x.r.loai==t).reduce((a,x)=>a+(x.r.amt||0),0);
+  $('csum').innerHTML=`<span class="badge bg-success me-1">Thu: ${vnd(s('Thu'))}</span><span class="badge bg-danger me-1">Chi: ${vnd(s('Chi'))}</span><span class="badge bg-primary">Tồn: ${vnd(s('Thu')-s('Chi'))}</span>`}
+}
+
+function crudSave(){
+  const fs=parseF(CK),r={};fs.forEach(f=>{const v=$('f_'+f.k).value;r[f.k]=f.t=='n'?Number(v)||0:v.trim()});
+  if(!fs.some(f=>f.t!='n'&&r[f.k]))return alert('Nhập dữ liệu!');
+  if(r.hs){const s=D('students').find(x=>x.id==r.hs);if(s){r.id=s.id;r.name=s.name;r.lop=r.lop||s.lop}}
+  if(CK=='advatt')r.status=r.status||'C';
+  const old=EDIT!=null?coll()[EDIT]:{};Object.assign(old,r);if(!old.date)old.date=r.ngay||new Date().toISOString();if(r.ngay)old.date=r.ngay;old._by=USER.name;
+  if(EDIT==null)coll().push(old);save();vCrud(CK);
+}
+
 function crudEdit(i){const r=coll()[i];EDIT=i;parseF(CK).forEach(f=>{if(f.t=='s')fillS(r.hs);else if($('f_'+f.k))$('f_'+f.k).value=r[f.k]??''});window.scrollTo(0,0);$('content').scrollTop=0}
 function crudDel(i){if(confirm('Xóa dòng này?')){coll().splice(i,1);save();crudList()}}
-function crudCSV(){const fs=parseF(CK),q=v=>'"'+String(v??'').replace(/"/g,'""')+'"';
- dl(CK+'.csv','\ufeff'+fs.map(f=>q(f.l)).join(',')+'\n'+rows().map(x=>fs.map(f=>q(x.r[f.k])).join(',')).join('\n'),'text/csv')}
+function crudCSV(){const fs=parseF(CK),q=v=>'"'+String(v??'').replace(/"/g,'""')+'"';dl(CK+'.csv','\ufeff'+fs.map(f=>q(f.l)).join(',')+'\n'+rows().map(x=>fs.map(f=>q(x.r[f.k])).join(',')).join('\n'),'text/csv')}
+
 /* ===== CÁC MÀN HÌNH ĐẶC THÙ ===== */
 const C=h=>$('content').innerHTML=h,card='card border-0 shadow-sm rounded-4 p-3 mb-3';
 const sel=(id,o,ch='')=>`<select id="${id}" class="form-select form-select-sm w-auto" onchange="${ch}">${o}</select>`;
+
 const VIEWS={
 dash(){C(`${sel('dc',clsOpts(1),'drawDash()')}<div class="row g-3 my-1 text-center">${['SĨ SỐ|d1','TỶ LỆ GIỎI|d2','VI PHẠM|d3','HÔM NAY VẮNG|d4'].map(x=>{const[a,b]=x.split('|');return`<div class="col-6 col-md-3"><div class="${card} mb-0"><h3 id="${b}">0</h3><small>${a}</small></div></div>`}).join('')}</div>
  <div class="${card} mt-3" style="height:300px"><canvas id="ch"></canvas></div>`);drawDash()},
@@ -274,105 +343,245 @@ launcher(){C(`<div class="row g-2">${MY.map(m=>`<div class="col-6 col-md-3 col-l
 overview(){const t=today();C(`<div class="row g-3 text-center">${[['Học sinh',D('students').length],['Số lớp',classes().length],['Vi phạm hôm nay',D('discipline').filter(d=>d.date.slice(0,10)==t).length],['Vắng hôm nay',D('attendance').filter(a=>a.date.slice(0,10)==t&&a.status=='V').length],['Tài khoản',D('users').length],['Giao dịch quỹ',D('fund').length]].map(x=>`<div class="col-6 col-md-4"><div class="${card}"><h2>${x[1]}</h2><small>${x[0]}</small></div></div>`).join('')}</div>`)},
 profile(){const id=USER.sid||'';C(`<div class="${card}"><input id="pid" class="form-control form-control-sm w-auto d-inline" placeholder="Mã HS" value="${esc(id)}"><button class="btn btn-primary btn-sm ms-1" onclick="drawProfile()">XEM</button></div><div id="pf"></div>`);if(id)drawProfile()}
 };
-function drawDash(){const c=$('dc').value,st=stOf(c),n=k=>st.filter(s=>s.hl===k).length,t=today(),ids=new Set(st.map(s=>s.id));
- $('d1').innerText=st.length;$('d2').innerText=st.length?Math.round(n('Giỏi')/st.length*100)+'%':'0%';$('d3').innerText=D('discipline').filter(d=>!c||d.lop===c).length;
- $('d4').innerText=D('attendance').filter(a=>a.date.slice(0,10)==t&&a.status=='V'&&(!c||ids.has(a.id))).length;
- if(chart)chart.destroy();chart=new Chart($('ch'),{type:'doughnut',data:{labels:['Giỏi','Khá','TB'],datasets:[{data:[n('Giỏi'),n('Khá'),st.length-n('Giỏi')-n('Khá')],backgroundColor:['#198754','#0d6efd','#ffc107']}]},options:{maintainAspectRatio:false}})}
-function listAtt(){const c=$('ac').value,d=$('ad').value;$('agv').innerText=c?'GVCN: '+gvOf(c):'';
- $('al').innerHTML=stOf(c).filter(s=>c).map(s=>{const r=D('attendance').find(a=>a.date==d&&a.id==s.id&&!a.tiet);return`<tr><td>${esc(s.name)}</td><td><select class="form-select form-select-sm w-auto" data-id="${esc(s.id)}"><option value="C">Có mặt</option><option value="V" ${r&&r.status=='V'?'selected':''}>Vắng</option></select></td></tr>`}).join('')}
-function saveAtt(){const d=$('ad').value;if(!$('ac').value)return alert('Chọn lớp!');
- document.querySelectorAll('#al select').forEach(x=>{const s=D('students').find(z=>z.id==x.dataset.id);db.attendance=db.attendance.filter(a=>!(a.date==d&&a.id==s.id&&!a.tiet));db.attendance.push({date:d,id:s.id,name:s.name,lop:s.lop,status:x.value})});save();alert('✅ Đã lưu!')}
-function listMgr(){$('ml').innerHTML=stOf($('mc').value).filter(s=>$('mc').value).map(s=>{const i=db.students.indexOf(s),o=(k,a)=>`<select class="form-select form-select-sm w-auto" onchange="db.students[${i}].${k}=this.value;save()">${a.map(x=>`<option ${s[k]==x?'selected':''}>${x}</option>`).join('')}</select>`;
- return`<tr><td>${esc(s.name)}</td><td>${o('hl',['Giỏi','Khá','TB'])}</td><td>${o('hk',['Tốt','Khá','TB','Yếu'])}</td></tr>`}).join('')}
+
+function drawDash(){
+  const c=$('dc').value,st=stOf(c),n=k=>st.filter(s=>s.hl===k).length,t=today(),ids=new Set(st.map(s=>s.id));
+  $('d1').innerText=st.length;$('d2').innerText=st.length?Math.round(n('Giỏi')/st.length*100)+'%':'0%';$('d3').innerText=D('discipline').filter(d=>!c||d.lop===c).length;
+  $('d4').innerText=D('attendance').filter(a=>a.date.slice(0,10)==t&&a.status=='V'&&(!c||ids.has(a.id))).length;
+  if(chart)chart.destroy();chart=new Chart($('ch'),{type:'doughnut',data:{labels:['Giỏi','Khá','TB'],datasets:[{data:[n('Giỏi'),n('Khá'),st.length-n('Giỏi')-n('Khá')],backgroundColor:['#198754','#0d6efd','#ffc107']}]},options:{maintainAspectRatio:false}});
+}
+
+function listAtt(){
+  const c=$('ac').value,d=$('ad').value;$('agv').innerText=c?'GVCN: '+gvOf(c):'';
+  $('al').innerHTML=stOf(c).filter(s=>c).map(s=>{const r=D('attendance').find(a=>a.date==d&&a.id==s.id&&!a.tiet);return`<tr><td>${esc(s.name)}</td><td><select class="form-select form-select-sm w-auto" data-id="${esc(s.id)}"><option value="C">Có mặt</option><option value="V" ${r&&r.status=='V'?'selected':''}>Vắng</option></select></td></tr>`}).join('');
+}
+
+function saveAtt(){
+  const d=$('ad').value;if(!$('ac').value)return alert('Chọn lớp!');
+  document.querySelectorAll('#al select').forEach(x=>{const s=D('students').find(z=>z.id==x.dataset.id);db.attendance=db.attendance.filter(a=>!(a.date==d&&a.id==s.id&&!a.tiet));db.attendance.push({date:d,id:s.id,name:s.name,lop:s.lop,status:x.value})});
+  save();alert('✅ Đã lưu!');
+}
+
+function listMgr(){
+  $('ml').innerHTML=stOf($('mc').value).filter(s=>$('mc').value).map(s=>{const i=db.students.indexOf(s),o=(k,a)=>`<select class="form-select form-select-sm w-auto" onchange="db.students[${i}].${k}=this.value;save()">${a.map(x=>`<option ${s[k]==x?'selected':''}>${x}</option>`).join('')}</select>`;
+  return`<tr><td>${esc(s.name)}</td><td>${o('hl',['Giỏi','Khá','TB'])}</td><td>${o('hk',['Tốt','Khá','TB','Yếu'])}</td></tr>`}).join('');
+}
+
 function bulk(){let n=0;$('bulk').value.split('\n').forEach(l=>{const[a,b,c]=l.split(/[,\t;]/).map(x=>x&&x.trim());if(a&&b&&c&&!D('students').some(s=>s.id==a)){db.students.push({id:a,name:b,lop:c,hl:'Khá',hk:'Tốt',bt:''});n++}});save();alert('Đã thêm '+n+' học sinh')}
 const inR=(d,s,e)=>{const x=d.date.slice(0,10);return x>=s&&x<=e};
-function drawGrid(){const s=$('gs').value,e=$('ge').value,g=$('gg').value,L=D('loi');
- const R=classes().filter(c=>!g||c.startsWith(g)).map(l=>{let p=100;const cells=L.map(x=>{const n=D('discipline').filter(d=>d.lop==l&&d.type==x.name&&inR(d,s,e)).length;p-=n*x.pts;return`<td>${n||''}</td>`}).join('');return{p,h:`<tr><td class="fw-bold">${esc(l)}</td><td>${esc(gvOf(l))}</td>${cells}<td class="fw-bold text-danger">${p}</td></tr>`}}).sort((a,b)=>b.p-a.p);
- $('gt').innerHTML=`<thead><tr><th>LỚP</th><th>GVCN</th>${L.map(x=>`<th title="${esc(x.name)} (-${x.pts})">${esc(x.code)}</th>`).join('')}<th>ĐIỂM</th></tr></thead><tbody>${R.map(r=>r.h).join('')}</tbody>`}
-function drawCvm(){const c=$('vc').value,s=$('vs').value,e=$('ve').value,L=D('loi');if(!c)return alert('Chọn lớp!');
- $('vt').innerHTML=`<thead><tr><th>HỌC SINH</th>${L.map(x=>`<th title="${esc(x.name)}">${esc(x.code)}</th>`).join('')}<th>ĐIỂM TRỪ</th></tr></thead><tbody>${stOf(c).map(st=>{let p=0;const cells=L.map(x=>{const n=D('discipline').filter(d=>d.id==st.id&&d.type==x.name&&inR(d,s,e)).length;p+=n*x.pts;return`<td>${n||''}</td>`}).join('');return`<tr><td class="fw-bold">${esc(st.name)}</td>${cells}<td class="text-danger fw-bold">${p}</td></tr>`}).join('')}</tbody>`}
-function drawAttStat(){const s=$('as').value,e=$('ae').value;
- $('ab').innerHTML=classes().map(l=>{const st=stOf(l),ids=new Set(st.map(x=>x.id)),V=D('attendance').filter(a=>ids.has(a.id)&&a.status=='V'&&inR(a,s,e)),names=[...new Set(V.map(a=>a.name))],vs=new Set(V.map(a=>a.id)),
- late=new Set(D('discipline').filter(d=>d.lop==l&&/muộn/i.test(d.type)&&inR(d,s,e)).map(d=>d.id)).size;
- return`<tr><td class="fw-bold">${esc(l)}</td><td>${esc(gvOf(l))}</td><td>${st.length}</td><td>${vs.size}</td><td>${late}</td><td>${st.length-vs.size}</td><td>${st.filter(x=>x.bt=='X'&&!vs.has(x.id)).length}</td><td class="text-start small">${esc(names.join(', '))}</td></tr>`}).join('')}
-function drawDstats(){const c=$('ds').value;$('dsb').innerHTML=stOf(c).filter(()=>c).map(s=>{const v=D('discipline').filter(d=>d.id==s.id),a=D('attendance').filter(x=>x.id==s.id&&x.status=='V').length,m={};v.forEach(d=>m[d.type]=(m[d.type]||0)+1);
- return`<tr><td>${esc(s.name)}</td><td>${a}</td><td>${v.length}</td><td class="small">${esc(Object.entries(m).map(([k,n])=>k+' ('+n+')').join(', '))}</td></tr>`}).join('')}
-function drawBday(){const m=+$('bm').value;$('bb').innerHTML=D('students').filter(s=>s.dob&&+s.dob.slice(5,7)==m).sort((a,b)=>a.dob.slice(8)-b.dob.slice(8)).map(s=>`<tr><td>${s.dob.slice(8)}/${s.dob.slice(5,7)}</td><td>🎂 ${esc(s.name)}</td><td>${esc(s.lop)}</td></tr>`).join('')||'<tr><td colspan="3" class="text-muted text-center">Không có sinh nhật</td></tr>'}
-function printCert(){const w=window.open('');w.document.write(`<body style="text-align:center;font-family:serif;border:12px double #d4a017;padding:60px;margin:20px"><h1 style="color:#d4a017;font-size:60px">GIẤY KHEN</h1><p>Trường khen tặng em</p><h2 style="color:#0d6efd;font-size:44px">${esc($('cs').value)}</h2><p>Lớp ${esc($('cc').value)}</p><h3 style="color:#dc3545;font-size:34px">${esc($('ct').value)}</h3><p>Ngày ${new Date().toLocaleDateString('vi-VN')}</p><script>print()<\/script>`)}
+
+function drawGrid(){
+  const s=$('gs').value,e=$('ge').value,g=$('gg').value,L=D('loi');
+  const R=classes().filter(c=>!g||c.startsWith(g)).map(l=>{let p=100;const cells=L.map(x=>{const n=D('discipline').filter(d=>d.lop==l&&d.type==x.name&&inR(d,s,e)).length;p-=n*x.pts;return`<td>${n||''}</td>`}).join('');return{p,h:`<tr><td class="fw-bold">${esc(l)}</td><td>${esc(gvOf(l))}</td>${cells}<td class="fw-bold text-danger">${p}</td></tr>`}}).sort((a,b)=>b.p-a.p);
+  $('gt').innerHTML=`<thead><tr><th>LỚP</th><th>GVCN</th>${L.map(x=>`<th title="${esc(x.name)} (-${x.pts})">${esc(x.code)}</th>`).join('')}<th>ĐIỂM</th></tr></thead><tbody>${R.map(r=>r.h).join('')}</tbody>`;
+}
+
+function drawCvm(){
+  const c=$('vc').value,s=$('vs').value,e=$('ve').value,L=D('loi');if(!c)return alert('Chọn lớp!');
+  $('vt').innerHTML=`<thead><tr><th>HỌC SINH</th>${L.map(x=>`<th title="${esc(x.name)}">${esc(x.code)}</th>`).join('')}<th>ĐIỂM TRỪ</th></tr></thead><tbody>${stOf(c).map(st=>{let p=0;const cells=L.map(x=>{const n=D('discipline').filter(d=>d.id==st.id&&d.type==x.name&&inR(d,s,e)).length;p+=n*x.pts;return`<td>${n||''}</td>`}).join('');return`<tr><td class="fw-bold">${esc(st.name)}</td>${cells}<td class="text-danger fw-bold">${p}</td></tr>`}).join('')}</tbody>`;
+}
+
+function drawAttStat(){
+  const s=$('as').value,e=$('ae').value;
+  $('ab').innerHTML=classes().map(l=>{const st=stOf(l),ids=new Set(st.map(x=>x.id)),V=D('attendance').filter(a=>ids.has(a.id)&&a.status=='V'&&inR(a,s,e)),names=[...new Set(V.map(a=>a.name))],vs=new Set(V.map(a=>a.id)),
+  late=new Set(D('discipline').filter(d=>d.lop==l&&/muộn/i.test(d.type)&&inR(d,s,e)).map(d=>d.id)).size;
+  return`<tr><td class="fw-bold">${esc(l)}</td><td>${esc(gvOf(l))}</td><td>${st.length}</td><td>${vs.size}</td><td>${late}</td><td>${st.length-vs.size}</td><td>${st.filter(x=>x.bt=='X'&&!vs.has(x.id)).length}</td><td class="text-start small">${esc(names.join(', '))}</td></tr>`}).join('');
+}
+
+function drawDstats(){
+  const c=$('ds').value;$('dsb').innerHTML=stOf(c).filter(()=>c).map(s=>{const v=D('discipline').filter(d=>d.id==s.id),a=D('attendance').filter(x=>x.id==s.id&&x.status=='V').length,m={};v.forEach(d=>m[d.type]=(m[d.type]||0)+1);
+  return`<tr><td>${esc(s.name)}</td><td>${a}</td><td>${v.length}</td><td class="small">${esc(Object.entries(m).map(([k,n])=>k+' ('+n+')').join(', '))}</td></tr>`}).join('');
+}
+
+function drawBday(){
+  const m=+$('bm').value;
+  $('bb').innerHTML=D('students').filter(s=>s.dob&&+s.dob.slice(5,7)==m).sort((a,b)=>a.dob.slice(8)-b.dob.slice(8)).map(s=>`<tr><td>${s.dob.slice(8)}/${s.dob.slice(5,7)}</td><td>🎂 ${esc(s.name)}</td><td>${esc(s.lop)}</td></tr>`).join('')||'<tr><td colspan="3" class="text-muted text-center">Không có sinh nhật</td></tr>';
+}
+
+function printCert(){
+  const w=window.open('');
+  w.document.write(`<body style="text-align:center;font-family:serif;border:12px double #d4a017;padding:60px;margin:20px"><h1 style="color:#d4a017;font-size:60px">GIẤY KHEN</h1><p>Trường khen tặng em</p><h2 style="color:#0d6efd;font-size:44px">${esc($('cs').value)}</h2><p>Lớp ${esc($('cc').value)}</p><h3 style="color:#dc3545;font-size:34px">${esc($('ct').value)}</h3><p>Ngày ${new Date().toLocaleDateString('vi-VN')}</p><script>print()<\/script>`);
+}
+
 const TIMES=['7h15-8h00','8h05-8h50','9h25-10h10','10h15-11h00','11h05-11h50','13h30-14h15','14h20-15h05','15h25-16h10','16h15-17h00','17h05-17h50'];
-function drawTkb(){const g=db.tkb[$('tw').value]||{};$('tb').innerHTML=TIMES.map((t,i)=>`<tr><td>${i<5?'S':'C'}${i%5+1}</td><td class="small">${t}</td>${[0,1,2,3,4,5].map(j=>`<td><input class="form-control form-control-sm text-center tk" value="${esc((g[i]||[])[j]||'')}"></td>`).join('')}</tr>`).join('')}
+function drawTkb(){
+  const g=db.tkb[$('tw').value]||{};
+  $('tb').innerHTML=TIMES.map((t,i)=>`<tr><td>${i<5?'S':'C'}${i%5+1}</td><td class="small">${t}</td>${[0,1,2,3,4,5].map(j=>`<td><input class="form-control form-control-sm text-center tk" value="${esc((g[i]||[])[j]||'')}"></td>`).join('')}</tr>`).join('');
+}
 function saveTkb(){const g={};document.querySelectorAll('#tb tr').forEach((r,i)=>g[i]=[...r.querySelectorAll('.tk')].map(x=>x.value));db.tkb[$('tw').value]=g;save();alert('✅ Đã lưu TKB tuần '+$('tw').value)}
-function makeGroups(){const c=$('gc').value,n=+$('gn').value||2,S=shuffle(stOf(c)),G=Array.from({length:n},()=>[]);S.forEach((s,i)=>G[i%n].push(s.name));
- $('gr').innerHTML=G.map((g,i)=>`<div class="col-md-3 col-6"><div class="${card} mb-0"><b class="text-primary">Nhóm ${i+1}</b><ol class="small mb-0 ps-3">${g.map(x=>`<li>${esc(x)}</li>`).join('')}</ol></div></div>`).join('')}
+
+function makeGroups(){
+  const c=$('gc').value,n=+$('gn').value||2,S=shuffle(stOf(c)),G=Array.from({length:n},()=>[]);
+  S.forEach((s,i)=>G[i%n].push(s.name));
+  $('gr').innerHTML=G.map((g,i)=>`<div class="col-md-3 col-6"><div class="${card} mb-0"><b class="text-primary">Nhóm ${i+1}</b><ol class="small mb-0 ps-3">${g.map(x=>`<li>${esc(x)}</li>`).join('')}</ol></div></div>`).join('');
+}
+
 let SELS=null;
 function seatList(){const c=$('sc').value;let a=db.seat[c];const S=stOf(c);if(!a||a.length!=S.length)a=db.seat[c]=S.map(s=>s.id);return a}
 function drawSeat(){if(!$('sc').value)return;const a=seatList();SELS=null;$('sg').innerHTML=a.map((id,i)=>`<div class="seat" id="st${i}" onclick="swapSeat(${i})">${esc((D('students').find(s=>s.id==id)||{}).name)}</div>`).join('')}
 function swapSeat(i){const a=seatList();if(SELS==null){SELS=i;$('st'+i).classList.add('sel')}else{[a[SELS],a[i]]=[a[i],a[SELS]];save();drawSeat()}}
 function shuffleSeat(){if(!$('sc').value)return;db.seat[$('sc').value]=shuffle(seatList());save();drawSeat()}
 function callSeat(){const a=seatList();if(!a.length)return;let n=0;const t=setInterval(()=>{document.querySelectorAll('.seat').forEach(x=>x.classList.remove('hit'));$('st'+(Math.random()*a.length|0)).classList.add('hit');if(++n>20){clearInterval(t)}},100)}
-function vPick(m){const ic={wheel:'🎡',ufo:'🛸',duck:'🦆'}[m];C(`<div class="${card} text-center"><div class="d-flex gap-2 justify-content-center mb-2">${sel('pc',clsOpts())}<button class="btn btn-primary btn-sm px-4" onclick="doPick('${ic}')">${ic} GỌI TÊN</button><button class="btn btn-light btn-sm" onclick="CALLED=[];$('pl').innerText=''">Đặt lại</button></div><div id="bigout" class="big">?</div><div class="small text-muted" id="pl"></div></div>`)}
+
+function vPick(m){
+  const ic={wheel:'🎡',ufo:'🛸',duck:'🦆'}[m];
+  C(`<div class="${card} text-center"><div class="d-flex gap-2 justify-content-center mb-2">${sel('pc',clsOpts())}<button class="btn btn-primary btn-sm px-4" onclick="doPick('${ic}')">${ic} GỌI TÊN</button><button class="btn btn-light btn-sm" onclick="CALLED=[];$('pl').innerText=''">Đặt lại</button></div><div id="bigout" class="big">?</div><div class="small text-muted" id="pl"></div></div>`);
+}
 let CALLED=[];
-function doPick(ic){const c=$('pc').value;if(!c)return alert('Chọn lớp!');let p=stOf(c).filter(s=>!CALLED.includes(s.id));if(!p.length){CALLED=[];p=stOf(c)}
- const w=p[Math.random()*p.length|0];spin(()=>ic+' '+p[Math.random()*p.length|0].name,()=>{CALLED.push(w.id);$('bigout').innerText=ic+' '+w.name;$('pl').innerText='Đã gọi: '+CALLED.length+'/'+stOf(c).length})}
+function doPick(ic){
+  const c=$('pc').value;if(!c)return alert('Chọn lớp!');let p=stOf(c).filter(s=>!CALLED.includes(s.id));if(!p.length){CALLED=[];p=stOf(c)}
+  const w=p[Math.random()*p.length|0];spin(()=>ic+' '+p[Math.random()*p.length|0].name,()=>{CALLED.push(w.id);$('bigout').innerText=ic+' '+w.name;$('pl').innerText='Đã gọi: '+CALLED.length+'/'+stOf(c).length});
+}
 function spin(f,done){let n=0;const t=setInterval(()=>{$('bigout').innerText=f();if(++n>20){clearInterval(t);done&&done()}},90)}
-let TI,AC;function tick(){clearInterval(TI);TI=setInterval(()=>{if($('clk'))$('clk').innerText=new Date().toLocaleTimeString('vi-VN');else clearInterval(TI)},500)}
+
+let TI,AC;
+function tick(){clearInterval(TI);TI=setInterval(()=>{if($('clk'))$('clk').innerText=new Date().toLocaleTimeString('vi-VN');else clearInterval(TI)},500)}
 function cd(){let s=(+$('tm').value||1)*60;clearInterval(TI);tick();const t=setInterval(()=>{if(!$('cdo'))return clearInterval(t);$('cdo').innerText=String(s/60|0).padStart(2,'0')+':'+String(s%60).padStart(2,'0');if(--s<0){clearInterval(t);ring(880,4)}},1000)}
 function ring(f,n,type='sine'){AC=AC||new AudioContext();for(let i=0;i<n;i++){const o=AC.createOscillator(),g=AC.createGain();o.type=type;o.frequency.value=f;o.connect(g);g.connect(AC.destination);const t=AC.currentTime+i*.6;g.gain.setValueAtTime(.6,t);g.gain.exponentialRampToValueAtTime(.001,t+.55);o.start(t);o.stop(t+.6)}}
 function drum(n){ring(110,n*2,'triangle')}
+
 function key(k){const i=$('ci');if(k=='C')i.value='';else if(k=='=')calc();else i.value+=k}
 function calc(){const i=$('ci');try{if(!/^[0-9+\-*/().% ]+$/.test(i.value))throw 0;i.value=+Function('return '+i.value)().toFixed(8)}catch(e){i.value='Lỗi'}}
-let TUG=0;function pull(d){TUG+=d;const p=50-TUG*10;$('tp').style.width=p+'%';$('tp').innerText=p+'%';if(Math.abs(TUG)>=5)$('tw2').innerText=TUG>0?'🏆 ĐỘI XANH THẮNG!':'🏆 ĐỘI ĐỎ THẮNG!'}
-let WW,WG,WL;function wstart(){WW=$('ww').value.toUpperCase();if(!WW)return;WG=[];WL=6;$('wh2').innerText='Gợi ý: '+$('wh').value;$('wset').classList.add('d-none');wdraw()}
-function wdraw(){const ok=[...WW].every(c=>c==' '||WG.includes(c));$('wd').innerText=[...WW].map(c=>c==' '?' ':WG.includes(c)?c:'_').join(' ');$('wl').innerText=ok?'🎉 ĐÚNG RỒI!':WL<=0?'💀 Hết lượt! Đáp án: '+WW:'Lượt còn lại: '+WL;
- $('wk').innerHTML=ok||WL<=0?'<button class="btn btn-primary btn-sm mt-2" onclick="VIEWS.word()">Chơi lại</button>':[...'AÀÁẢÃẠĂẰẮẲẴẶÂẦẤẨẪẬBCDĐEÈÉẺẼẸÊỀẾỂỄỆFGHIÌÍỈĨỊJKLMNOÒÓỎÕỌÔỒỐỔỖỘƠỜỚỞỠỢPQRSTUÙÚỦŨỤƯỪỨỬỮỰVWXYỲÝỶỸỴZ0123456789'].map(k=>`<button class="btn btn-sm btn-outline-secondary m-1" ${WG.includes(k)?'disabled':''} onclick="wguess('${k}')">${k}</button>`).join('')}
+
+let TUG=0;
+function pull(d){TUG+=d;const p=50-TUG*10;$('tp').style.width=p+'%';$('tp').innerText=p+'%';if(Math.abs(TUG)>=5)$('tw2').innerText=TUG>0?'🏆 ĐỘI XANH THẮNG!':'🏆 ĐỘI ĐỎ THẮNG!'}
+
+let WW,WG,WL;
+function wstart(){WW=$('ww').value.toUpperCase();if(!WW)return;WG=[];WL=6;$('wh2').innerText='Gợi ý: '+$('wh').value;$('wset').classList.add('d-none');wdraw()}
+function wdraw(){
+  const ok=[...WW].every(c=>c==' '||WG.includes(c));$('wd').innerText=[...WW].map(c=>c==' '?' ':WG.includes(c)?c:'_').join(' ');$('wl').innerText=ok?'🎉 ĐÚNG RỒI!':WL<=0?'💀 Hết lượt! Đáp án: '+WW:'Lượt còn lại: '+WL;
+  $('wk').innerHTML=ok||WL<=0?'<button class="btn btn-primary btn-sm mt-2" onclick="VIEWS.word()">Chơi lại</button>':[...'AÀÁẢÃẠĂẰẮẲẴẶÂẦẤẨẪẬBCDĐEÈÉẺẼẸÊỀẾỂỄỆFGHIÌÍỈĨỊJKLMNOÒÓỎÕỌÔỒỐỔỖỘƠỜỚỞỠỢPQRSTUÙÚỦŨỤƯỪỨỬỮỰVWXYỲÝỶỸỴZ0123456789'].map(k=>`<button class="btn btn-sm btn-outline-secondary m-1" ${WG.includes(k)?'disabled':''} onclick="wguess('${k}')">${k}</button>`).join('');
+}
 function wguess(k){WG.push(k);if(!WW.includes(k))WL--;wdraw()}
-function drawProfile(){const s=D('students').find(x=>x.id==$('pid').value);if(!s)return $('pf').innerHTML='<div class="text-danger">Không thấy mã HS</div>';
- $('pf').innerHTML=`<div class="${card} bg-primary text-white"><h4>${esc(s.name)}</h4>Lớp ${esc(s.lop)} | ID ${esc(s.id)} | Học lực ${esc(s.hl)} | Hạnh kiểm ${esc(s.hk)}</div><div class="row g-3"><div class="col-md-6"><div class="${card}"><b>Điểm</b><table class="table table-sm mb-0">${D('scores').filter(x=>x.id==s.id).map(x=>`<tr><td>${esc(x.mon)}</td><td>${COMP.scores[1](x)}</td></tr>`).join('')}</table></div></div><div class="col-md-6"><div class="${card}"><b>Vi phạm</b>${D('discipline').filter(x=>x.id==s.id).map(x=>`<div class="small border-bottom py-1">${dtxt(x.date)} - ${esc(x.type)}</div>`).join('')}</div></div></div>`}
-/* ===== SOẠN ĐỀ TRẮC NGHIỆM BẰNG GEMINI (gọi qua Worker /api/ai) ===== */
+
+function drawProfile(){
+  const s=D('students').find(x=>x.id==$('pid').value);if(!s)return $('pf').innerHTML='<div class="text-danger">Không thấy mã HS</div>';
+  $('pf').innerHTML=`<div class="${card} bg-primary text-white"><h4>${esc(s.name)}</h4>Lớp ${esc(s.lop)} | ID ${esc(s.id)} | Học lực ${esc(s.hl)} | Hạnh kiểm ${esc(s.hk)}</div><div class="row g-3"><div class="col-md-6"><div class="${card}"><b>Điểm</b><table class="table table-sm mb-0">${D('scores').filter(x=>x.id==s.id).map(x=>`<tr><td>${esc(x.mon)}</td><td>${COMP.scores[1](x)}</td></tr>`).join('')}</table></div></div><div class="col-md-6"><div class="${card}"><b>Vi phạm</b>${D('discipline').filter(x=>x.id==s.id).map(x=>`<div class="small border-bottom py-1">${dtxt(x.date)} - ${esc(x.type)}</div>`).join('')}</div></div></div>`;
+}
+
+/* ===== SOẠN ĐỀ TRẮC NGHIỆM BẰNG GEMINI TRỰC TIẾP ===== */
+const GEMINI_API_KEY = "AQ.Ab8RN6JUH5KoAS9tuBKepFTIjlXigmXKjaZQ9XqFqrONi7DaQg";
 let QZ=[];
-VIEWS.quiz=function(){C(`<div class="${card}"><h6 class="fw-bold text-primary">🤖 Soạn đề trắc nghiệm bằng AI (Gemini)</h6><div class="row g-2">
- <div class="col-md-3 col-6"><label class="small fw-bold">Môn</label><select id="qm" class="form-select form-select-sm">${D('mon').map(m=>`<option>${esc(m.name)}</option>`).join('')}</select></div>
- <div class="col-md-2 col-6"><label class="small fw-bold">Khối/Lớp</label><input id="qk" class="form-control form-control-sm" value="9"></div>
- <div class="col-md-4"><label class="small fw-bold">Chủ đề / Bài học</label><input id="qt" class="form-control form-control-sm" placeholder="VD: Hàm số bậc nhất"></div>
- <div class="col-md-1 col-6"><label class="small fw-bold">Số câu</label><input id="qn" type="number" value="10" min="1" max="40" class="form-control form-control-sm"></div>
- <div class="col-md-2 col-6"><label class="small fw-bold">Mức độ</label><select id="ql" class="form-select form-select-sm"><option>Hỗn hợp</option><option>Nhận biết</option><option>Thông hiểu</option><option>Vận dụng</option><option>Vận dụng cao</option></select></div>
- <div class="col-12"><label class="small fw-bold">Yêu cầu thêm (tùy chọn)</label><input id="qx" class="form-control form-control-sm" placeholder="VD: bám sát SGK Kết nối tri thức, có câu tính toán..."></div>
- <div class="col-12"><button class="btn btn-primary btn-sm px-4" id="qbtn" onclick="genQuiz()">✨ SOẠN ĐỀ</button> <span id="qst" class="small ms-2"></span></div></div></div>
- <div id="qr"></div><div class="${card}"><b>📁 Đề đã lưu</b><div id="qs" class="mt-2"></div></div>`);QZ=[];savedQuiz()};
-async function genQuiz(){const n=Math.min(40,+$('qn').value||10),v=id=>$('q'+id).value.trim();if(!v('t'))return alert('Nhập chủ đề!');
- const p=`Bạn là giáo viên môn ${v('m')} ở Việt Nam. Hãy soạn ${n} câu hỏi trắc nghiệm, mỗi câu có 4 đáp án và chỉ MỘT đáp án đúng. Khối/lớp: ${v('k')}. Chủ đề: ${v('t')}. Mức độ: ${v('l')}. ${v('x')} Nội dung phải chính xác, phù hợp học sinh, đáp án đúng phân bố ngẫu nhiên giữa các vị trí. Trả về DUY NHẤT một mảng JSON (không dùng markdown), mỗi phần tử có dạng {"q":"nội dung câu hỏi","o":["đáp án A","đáp án B","đáp án C","đáp án D"],"a":0,"e":"giải thích ngắn"}; "a" là chỉ số (0-3) của đáp án đúng. Không thêm tiền tố "A.","B." vào nội dung đáp án.`;
- $('qbtn').disabled=true;$('qst').innerText='⏳ Gemini đang soạn đề...';
- try{const r=await fetch('/api/ai',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt:p,json:true})});
-  const j=await r.json();if(!r.ok||j.error)throw new Error(j.error||'Lỗi máy chủ ('+r.status+')');
-  const a=JSON.parse(String(j.text).replace(/```json|```/g,'').trim());
-  if(!Array.isArray(a)||!a.length)throw new Error('AI trả về sai định dạng, hãy thử lại');
-  QZ=a.filter(x=>x&&x.q&&Array.isArray(x.o)).map(x=>({q:x.q,o:[0,1,2,3].map(i=>String(x.o[i]??'')),a:Math.min(3,Math.max(0,+x.a||0)),e:x.e||''}));
-  $('qst').innerText='✅ Đã soạn '+QZ.length+' câu — hãy kiểm tra lại trước khi dùng!';drawQuiz()}
- catch(e){$('qst').innerText='❌ '+e.message}
- $('qbtn').disabled=false}
-function drawQuiz(){$('qr').innerHTML=`<div class="${card}"><div class="d-flex flex-wrap gap-2 mb-3"><button class="btn btn-success btn-sm" onclick="saveQuiz()">💾 Lưu đề</button><button class="btn btn-outline-primary btn-sm" onclick="printQuiz(0)">🖨 In đề</button><button class="btn btn-outline-danger btn-sm" onclick="printQuiz(1)">🖨 In đề + đáp án</button><button class="btn btn-outline-secondary btn-sm" onclick="dl('de-trac-nghiem.json',JSON.stringify(QZ,null,1),'application/json')">JSON</button></div>
- ${QZ.map((x,i)=>`<div class="border rounded-3 p-2 mb-2"><div class="d-flex gap-2"><b>Câu ${i+1}.</b><textarea class="form-control form-control-sm" rows="2" onchange="QZ[${i}].q=this.value">${esc(x.q)}</textarea><button class="btn btn-sm text-danger" onclick="QZ.splice(${i},1);drawQuiz()">✕</button></div>
- ${x.o.map((o,j)=>`<div class="d-flex align-items-center gap-2 mt-1"><input type="radio" name="qa${i}" ${x.a==j?'checked':''} onchange="QZ[${i}].a=${j}"><b>${'ABCD'[j]}.</b><input class="form-control form-control-sm" value="${esc(o)}" onchange="QZ[${i}].o[${j}]=this.value"></div>`).join('')}
- <div class="small text-muted mt-1">💡 <input class="form-control form-control-sm d-inline w-75" value="${esc(x.e)}" onchange="QZ[${i}].e=this.value"></div></div>`).join('')}</div>`}
-function saveQuiz(){if(!QZ.length)return;const t=prompt('Tên đề:',($('qm').value+' - '+$('qt').value));if(!t)return;D('quizzes').push({title:t,date:new Date().toISOString(),items:QZ});save();savedQuiz()}
-function savedQuiz(){$('qs').innerHTML=D('quizzes').map((z,i)=>`<div class="d-flex align-items-center gap-2 border-bottom py-1 small"><span class="flex-grow-1">${esc(z.title)} <span class="text-muted">(${z.items.length} câu, ${dtxt(z.date).slice(0,10)})</span></span><button class="btn btn-sm btn-outline-primary" onclick="QZ=structuredClone(db.quizzes[${i}].items);drawQuiz()">Mở</button><button class="btn btn-sm text-danger" onclick="if(confirm('Xóa đề?')){db.quizzes.splice(${i},1);save();savedQuiz()}">Xóa</button></div>`).join('')||'<span class="text-muted small">Chưa có đề nào.</span>'}
-function printQuiz(ans){const w=window.open('');const t=$('qm').value+' - '+$('qt').value;
- w.document.write(`<meta charset="UTF-8"><body style="font-family:'Times New Roman',serif;margin:30px;line-height:1.5"><h2 style="text-align:center">ĐỀ KIỂM TRA TRẮC NGHIỆM<br><small>${esc(t)}</small></h2><p>Họ và tên: ....................................... Lớp: ........</p>
- ${QZ.map((x,i)=>`<div style="margin-bottom:10px;page-break-inside:avoid"><b>Câu ${i+1}.</b> ${esc(x.q)}<br>${x.o.map((o,j)=>`<span style="display:inline-block;width:48%"><b>${'ABCD'[j]}.</b> ${esc(o)}</span>`).join('')}</div>`).join('')}
- ${ans?`<hr><h3>ĐÁP ÁN</h3><p>${QZ.map((x,i)=>`${i+1}-${'ABCD'[x.a]}`).join(' &nbsp; ')}</p>${QZ.map((x,i)=>x.e?`<p style="font-size:13px"><b>Câu ${i+1}:</b> ${esc(x.e)}</p>`:'').join('')}`:''}<script>print()<\/script>`)}
-/* ===== BÁO CÁO VI PHẠM (hôm nay / tổng hợp / tra cứu) ===== */
-function vRep(m){const t=today();C(`<div class="${card}"><div class="d-flex flex-wrap gap-2"><input type="date" id="rs" class="form-control form-control-sm w-auto" value="${t}"><input type="date" id="re" class="form-control form-control-sm w-auto" value="${t}">
- ${m=='sum'?'':sel('rc',clsOpts(1))+sel('rt','<option value="">Mọi lỗi</option>'+D('loi').map(l=>`<option>${esc(l.name)}</option>`).join(''))+'<input id="rq" class="form-control form-control-sm w-auto" placeholder="Tên HS...">'}
- <button class="btn btn-danger btn-sm px-4" onclick="runRep('${m}')">LỌC</button></div></div><div class="card table-responsive"><table class="table table-hover table-sm mb-0 small"><tbody id="rb"></tbody></table></div><div class="fw-bold text-danger mt-2" id="rtot"></div>`);runRep(m)}
-function runRep(m){const s=$('rs').value,e=$('re').value;
- if(m=='sum'){$('rb').innerHTML='<tr class="table-light"><th>LỚP</th><th>GVCN</th><th>DANH SÁCH VI PHẠM</th></tr>'+classes().map(l=>{const v=D('discipline').filter(d=>d.lop==l&&inR(d,s,e));return`<tr><td class="fw-bold">${esc(l)}</td><td>${esc(gvOf(l))}</td><td>${v.map(d=>`<small class="text-muted">[${dtxt(d.date).slice(5)}]</small> <b>${esc(d.name)}</b> (${esc(d.type)})`).join('<br>')}</td></tr>`}).join('');return $('rtot').innerText=''}
- const c=$('rc').value,t=$('rt').value,q=$('rq').value.toLowerCase(),v=D('discipline').filter(d=>inR(d,s,e)&&(!c||d.lop==c)&&(!t||d.type==t)&&(!q||String(d.name).toLowerCase().includes(q)));
- $('rb').innerHTML='<tr class="table-light"><th>NGÀY GIỜ</th><th>LỚP</th><th>HỌ TÊN</th><th>VI PHẠM</th><th>GHI CHÚ</th></tr>'+v.map(d=>`<tr><td>${dtxt(d.date)}</td><td>${esc(d.lop)}</td><td>${esc(d.name)}</td><td>${esc(d.type)}</td><td>${esc(d.note)}</td></tr>`).join('');$('rtot').innerText='Tổng số vụ: '+v.length}
+
+VIEWS.quiz=function(){
+  C(`<div class="${card}"><h6 class="fw-bold text-primary">🤖 Soạn đề trắc nghiệm bằng AI (Gemini)</h6><div class="row g-2">
+  <div class="col-md-3 col-6"><label class="small fw-bold">Môn</label><select id="qm" class="form-select form-select-sm">${D('mon').map(m=>`<option>${esc(m.name)}</option>`).join('')}</select></div>
+  <div class="col-md-2 col-6"><label class="small fw-bold">Khối/Lớp</label><input id="qk" class="form-control form-control-sm" value="9"></div>
+  <div class="col-md-4"><label class="small fw-bold">Chủ đề / Bài học</label><input id="qt" class="form-control form-control-sm" placeholder="VD: Hàm số bậc nhất"></div>
+  <div class="col-md-1 col-6"><label class="small fw-bold">Số câu</label><input id="qn" type="number" value="10" min="1" max="40" class="form-control form-control-sm"></div>
+  <div class="col-md-2 col-6"><label class="small fw-bold">Mức độ</label><select id="ql" class="form-select form-select-sm"><option>Hỗn hợp</option><option>Nhận biết</option><option>Thông hiểu</option><option>Vận dụng</option><option>Vận dụng cao</option></select></div>
+  <div class="col-12"><label class="small fw-bold">Yêu cầu thêm (tùy chọn)</label><input id="qx" class="form-control form-control-sm" placeholder="VD: bám sát SGK Kết nối tri thức, có câu tính toán..."></div>
+  <div class="col-12"><button class="btn btn-primary btn-sm px-4" id="qbtn" onclick="genQuiz()">✨ SOẠN ĐỀ</button> <span id="qst" class="small ms-2"></span></div></div></div>
+  <div id="qr"></div><div class="${card}"><b>📁 Đề đã lưu</b><div id="qs" class="mt-2"></div></div>`);
+  QZ=[];savedQuiz();
+};
+
+async function genQuiz(){
+  const n=Math.min(40,+$('qn').value||10);
+  const v=id=>$('q'+id).value.trim();
+  if(!v('t'))return alert('Nhập chủ đề!');
+
+  const p=`Bạn là giáo viên môn ${v('m')} ở Việt Nam. Hãy soạn ${n} câu hỏi trắc nghiệm, mỗi câu có 4 đáp án và chỉ MỘT đáp án đúng. Khối/lớp: ${v('k')}. Chủ đề: ${v('t')}. Mức độ: ${v('l')}. ${v('x')} Nội dung phải chính xác, phù hợp học sinh, đáp án đúng phân bố ngẫu nhiên giữa các vị trí. Trả về DUY NHẤT một mảng JSON (không dùng markdown), mỗi phần tử có dạng {"q":"nội dung câu hỏi","o":["đáp án A","đáp án B","đáp án C","đáp án D"],"a":0,"e":"giải thích ngắn"}; "a" là chỉ số (0-3) của đáp án đúng. Không thêm tiền tố "A.","B." vào nội dung đáp án.`;
+
+  $('qbtn').disabled=true;
+  $('qst').innerText='⏳ Gemini đang soạn đề...';
+
+  try {
+    const model = "gemini-2.5-flash";
+    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`;
+
+    const payload = {
+      contents: [{ parts: [{ text: p }] }],
+      generationConfig: {
+        responseMimeType: "application/json"
+      }
+    };
+
+    const r = await fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    const j = await r.json();
+    if(!r.ok || j.error) throw new Error(j.error?.message || 'Lỗi kết nối Gemini ('+r.status+')');
+
+    const rawText = j.candidates?.[0]?.content?.parts?.[0]?.text || "";
+    const cleanJson = rawText.replace(/```json|```/g, '').trim();
+    const a = JSON.parse(cleanJson);
+
+    if(!Array.isArray(a) || !a.length) throw new Error('AI trả về sai cấu trúc mảng câu hỏi.');
+
+    QZ = a.filter(x => x && x.q && Array.isArray(x.o)).map(x => ({
+      q: x.q,
+      o: [0, 1, 2, 3].map(i => String(x.o[i] ?? '')),
+      a: Math.min(3, Math.max(0, +x.a || 0)),
+      e: x.e || ''
+    }));
+
+    $('qst').innerText = '✅ Đã soạn ' + QZ.length + ' câu — hãy kiểm tra lại trước khi dùng!';
+    drawQuiz();
+  } catch(e) {
+    $('qst').innerText = '❌ ' + e.message;
+  }
+  $('qbtn').disabled = false;
+}
+
+function drawQuiz(){
+  $('qr').innerHTML=`<div class="${card}"><div class="d-flex flex-wrap gap-2 mb-3"><button class="btn btn-success btn-sm" onclick="saveQuiz()">💾 Lưu đề</button><button class="btn btn-outline-primary btn-sm" onclick="printQuiz(0)">🖨 In đề</button><button class="btn btn-outline-danger btn-sm" onclick="printQuiz(1)">🖨 In đề + đáp án</button><button class="btn btn-outline-secondary btn-sm" onclick="dl('de-trac-nghiem.json',JSON.stringify(QZ,null,1),'application/json')">JSON</button></div>
+  ${QZ.map((x,i)=>`<div class="border rounded-3 p-2 mb-2"><div class="d-flex gap-2"><b>Câu ${i+1}.</b><textarea class="form-control form-control-sm" rows="2" onchange="QZ[${i}].q=this.value">${esc(x.q)}</textarea><button class="btn btn-sm text-danger" onclick="QZ.splice(${i},1);drawQuiz()">✕</button></div>
+  ${x.o.map((o,j)=>`<div class="d-flex align-items-center gap-2 mt-1"><input type="radio" name="qa${i}" ${x.a==j?'checked':''} onchange="QZ[${i}].a=${j}"><b>${'ABCD'[j]}.</b><input class="form-control form-control-sm" value="${esc(o)}" onchange="QZ[${i}].o[${j}]=this.value"></div>`).join('')}
+  <div class="small text-muted mt-1">💡 <input class="form-control form-control-sm d-inline w-75" value="${esc(x.e)}" onchange="QZ[${i}].e=this.value"></div></div>`).join('')}</div>`;
+}
+
+function saveQuiz(){
+  if(!QZ.length)return;
+  const t=prompt('Tên đề:',($('qm').value+' - '+$('qt').value));
+  if(!t)return;
+  D('quizzes').push({title:t,date:new Date().toISOString(),items:QZ});
+  save();savedQuiz();
+}
+
+function savedQuiz(){
+  $('qs').innerHTML=D('quizzes').map((z,i)=>`<div class="d-flex align-items-center gap-2 border-bottom py-1 small"><span class="flex-grow-1">${esc(z.title)} <span class="text-muted">(${z.items.length} câu, ${dtxt(z.date).slice(0,10)})</span></span><button class="btn btn-sm btn-outline-primary" onclick="QZ=structuredClone(db.quizzes[${i}].items);drawQuiz()">Mở</button><button class="btn btn-sm text-danger" onclick="if(confirm('Xóa đề?')){db.quizzes.splice(${i},1);save();savedQuiz()}">Xóa</button></div>`).join('')||'<span class="text-muted small">Chưa có đề nào.</span>';
+}
+
+function printQuiz(ans){
+  const w=window.open('');
+  const t=$('qm').value+' - '+$('qt').value;
+  w.document.write(`<meta charset="UTF-8"><body style="font-family:'Times New Roman',serif;margin:30px;line-height:1.5"><h2 style="text-align:center">ĐỀ KIỂM TRA TRẮC NGHIỆM<br><small>${esc(t)}</small></h2><p>Họ và tên: ....................................... Lớp: ........</p>
+  ${QZ.map((x,i)=>`<div style="margin-bottom:10px;page-break-inside:avoid"><b>Câu ${i+1}.</b> ${esc(x.q)}<br>${x.o.map((o,j)=>`<span style="display:inline-block;width:48%"><b>${'ABCD'[j]}.</b> ${esc(o)}</span>`).join('')}</div>`).join('')}
+  ${ans?`<hr><h3>ĐÁP ÁN</h3><p>${QZ.map((x,i)=>`${i+1}-${'ABCD'[x.a]}`).join(' &nbsp; ')}</p>${QZ.map((x,i)=>x.e?`<p style="font-size:13px"><b>Câu ${i+1}:</b> ${esc(x.e)}</p>`:'').join('')}`:''}<script>print()<\/script>`);
+}
+
+/* ===== BÁO CÁO VI PHẠM ===== */
+function vRep(m){
+  const t=today();
+  C(`<div class="${card}"><div class="d-flex flex-wrap gap-2"><input type="date" id="rs" class="form-control form-control-sm w-auto" value="${t}"><input type="date" id="re" class="form-control form-control-sm w-auto" value="${t}">
+  ${m=='sum'?'':sel('rc',clsOpts(1))+sel('rt','<option value="">Mọi lỗi</option>'+D('loi').map(l=>`<option>${esc(l.name)}</option>`).join(''))+'<input id="rq" class="form-control form-control-sm w-auto" placeholder="Tên HS...">'}
+  <button class="btn btn-danger btn-sm px-4" onclick="runRep('${m}')">LỌC</button></div></div><div class="card table-responsive"><table class="table table-hover table-sm mb-0 small"><tbody id="rb"></tbody></table></div><div class="fw-bold text-danger mt-2" id="rtot"></div>`);
+  runRep(m);
+}
+
+function runRep(m){
+  const s=$('rs').value,e=$('re').value;
+  if(m=='sum'){
+    $('rb').innerHTML='<tr class="table-light"><th>LỚP</th><th>GVCN</th><th>DANH SÁCH VI PHẠM</th></tr>'+classes().map(l=>{const v=D('discipline').filter(d=>d.lop==l&&inR(d,s,e));return`<tr><td class="fw-bold">${esc(l)}</td><td>${esc(gvOf(l))}</td><td>${v.map(d=>`<small class="text-muted">[${dtxt(d.date).slice(5)}]</small> <b>${esc(d.name)}</b> (${esc(d.type)})`).join('<br>')}</td></tr>`}).join('');
+    return $('rtot').innerText='';
+  }
+  const c=$('rc').value,t=$('rt').value,q=$('rq').value.toLowerCase(),v=D('discipline').filter(d=>inR(d,s,e)&&(!c||d.lop==c)&&(!t||d.type==t)&&(!q||String(d.name).toLowerCase().includes(q)));
+  $('rb').innerHTML='<tr class="table-light"><th>NGÀY GIỜ</th><th>LỚP</th><th>HỌ TÊN</th><th>VI PHẠM</th><th>GHI CHÚ</th></tr>'+v.map(d=>`<tr><td>${dtxt(d.date)}</td><td>${esc(d.lop)}</td><td>${esc(d.name)}</td><td>${esc(d.type)}</td><td>${esc(d.note)}</td></tr>`).join('');
+  $('rtot').innerText='Tổng số vụ: '+v.length;
+}
+
 /* ===== XU HƯỚNG ===== */
 function vTrend(m){C(`<div class="${card}">${m=='all'?sel('tcl',clsOpts(1),'drawTrend(\''+m+'\')'):''}<div style="height:420px"><canvas id="tc"></canvas></div></div>`);drawTrend(m)}
-function drawTrend(m){const V=D('discipline'),mo=[...new Set(V.map(d=>d.date.slice(0,7)))].sort(),cnt=f=>mo.map(x=>V.filter(d=>d.date.slice(0,7)==x&&f(d)).length),cl=$('tcl')?$('tcl').value:'';
- const col=['#dc3545','#fd7e14','#ffc107','#198754','#0dcaf0','#0d6efd','#6610f2','#d63384'];
- const ds=m=='all'?[{type:'bar',label:'Toàn trường',data:cnt(()=>1),backgroundColor:'#9ec5fe'},{type:'line',label:cl||'(chọn lớp)',data:cl?cnt(d=>d.lop==cl):[],borderColor:'#dc3545'}]:D('loi').map((l,i)=>({type:'line',label:l.name,data:cnt(d=>d.type==l.name),borderColor:col[i%8],tension:.3}));
- if(chart)chart.destroy();chart=new Chart($('tc'),{data:{labels:mo,datasets:ds},options:{maintainAspectRatio:false}})}
-const VIEW_KEYS=0;
-</script></body></html>
+function drawTrend(m){
+  const V=D('discipline'),mo=[...new Set(V.map(d=>d.date.slice(0,7)))].sort(),cnt=f=>mo.map(x=>V.filter(d=>d.date.slice(0,7)==x&&f(d)).length),cl=$('tcl')?$('tcl').value:'';
+  const col=['#dc3545','#fd7e14','#ffc107','#198754','#0dcaf0','#0d6efd','#6610f2','#d63384'];
+  const ds=m=='all'?[{type:'bar',label:'Toàn trường',data:cnt(()=>1),backgroundColor:'#9ec5fe'},{type:'line',label:cl||'(chọn lớp)',data:cl?cnt(d=>d.lop==cl):[],borderColor:'#dc3545'}]:D('loi').map((l,i)=>({type:'line',label:l.name,data:cnt(d=>d.type==l.name),borderColor:col[i%8],tension:.3}));
+  if(chart)chart.destroy();chart=new Chart($('tc'),{data:{labels:mo,datasets:ds},options:{maintainAspectRatio:false}});
+}
+</script>
+</body>
+</html>
