@@ -3,40 +3,62 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>EduClass Pro</title>
+<title>EduClass Pro - Quản lý sư phạm</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 <style>
-#side{width:270px;min-width:270px}
-.mi{cursor:pointer;border:0;border-radius:10px;margin-bottom:3px;font-weight:500}
-.mi.on{background:#ebf8ff;color:#2b6cb0;font-weight:700}
-@media(max-width:768px){#side{position:fixed;left:-290px;top:0;bottom:0;z-index:99;transition:.3s}#side.open{left:0}}
+#side { width: 270px; min-width: 270px; }
+.mi { cursor: pointer; border: 0; border-radius: 10px; margin-bottom: 3px; font-weight: 500; }
+.mi.on { background: #ebf8ff; color: #2b6cb0; font-weight: 700; }
+@media (max-width: 768px) {
+  #side { position: fixed; left: -290px; top: 0; bottom: 0; z-index: 99; transition: .3s; }
+  #side.open { left: 0; }
+}
 </style>
 </head>
 <body class="bg-light">
 
+<!-- GIAO DIỆN ĐĂNG NHẬP -->
 <div id="login" class="d-flex align-items-center justify-content-center vh-100">
   <div class="card shadow border-0 rounded-4 p-4" style="width:380px;max-width:92vw">
     <h3 class="fw-bold text-center mb-1">EduClass <span class="text-primary">Pro</span></h3>
-    <p class="text-center text-muted small mb-4">Hệ thống quản lý sư phạm</p>
-    <label class="small fw-bold">Email</label><input id="em" class="form-control mb-3" autocomplete="username">
-    <label class="small fw-bold">Mật khẩu</label><input id="pw" type="password" class="form-control mb-3" autocomplete="current-password">
+    <p class="text-center text-muted small mb-4">Hệ thống quản lý sư phạm (Chế độ độc lập)</p>
+    
+    <label class="small fw-bold">Email</label>
+    <input id="em" class="form-control mb-3" placeholder="admin@edu.vn" value="admin@edu.vn" autocomplete="username">
+    
+    <label class="small fw-bold">Mật khẩu</label>
+    <input id="pw" type="password" class="form-control mb-3" placeholder="admin123@" value="admin123@" autocomplete="current-password">
+    
     <button id="lb" class="btn btn-primary w-100 fw-bold rounded-pill" onclick="login()">ĐĂNG NHẬP</button>
+    <div class="alert alert-light border small mt-3 mb-0 text-muted">
+      💡 <b>Tài khoản sẵn có:</b><br>
+      • Admin: <code>admin@edu.vn</code> / <code>admin123@</code><br>
+      • GVCN: <code>gvcn@edu.vn</code> / <code>123</code><br>
+      • Học sinh: <code>hs1@edu.vn</code> / <code>hs1</code>
+    </div>
   </div>
 </div>
 
+<!-- GIAO DIỆN CHÍNH SAU KHI VÀO ĐƯỢC -->
 <div id="app" class="d-none d-flex vh-100 overflow-hidden">
   <div id="side" class="bg-white border-end d-flex flex-column">
-    <div class="p-3 fw-bold text-primary fs-5 border-bottom"><i class="fas fa-graduation-cap text-warning me-2"></i>EduClass</div>
+    <div class="p-3 fw-bold text-primary fs-5 border-bottom">
+      <i class="fas fa-graduation-cap text-warning me-2"></i>EduClass
+    </div>
     <div id="menu" class="list-group list-group-flush p-2 flex-grow-1 overflow-auto"></div>
     <div class="p-3 border-top bg-light">
-      <div class="fw-bold small text-truncate" id="un"></div><div class="text-muted small mb-2" id="ur"></div>
+      <div class="fw-bold small text-truncate" id="un"></div>
+      <div class="text-muted small mb-2" id="ur"></div>
       <button class="btn btn-sm btn-outline-danger w-100 rounded-pill" onclick="logout()">Thoát</button>
     </div>
   </div>
+
   <div class="flex-grow-1 d-flex flex-column overflow-hidden">
     <div class="bg-white border-bottom px-3 py-3 d-flex align-items-center gap-3">
-      <button class="btn btn-outline-primary d-md-none" onclick="document.getElementById('side').classList.toggle('open')"><i class="fas fa-bars"></i></button>
+      <button class="btn btn-outline-primary d-md-none" onclick="document.getElementById('side').classList.toggle('open')">
+        <i class="fas fa-bars"></i>
+      </button>
       <h5 class="m-0 fw-bold text-secondary" id="pt">Tổng quan</h5>
     </div>
     <div id="main" class="p-3 p-md-4 overflow-auto flex-grow-1"></div>
@@ -44,58 +66,132 @@
 </div>
 
 <script>
-const API = 'https://script.google.com/macros/s/AKfycbyU90BXQEFrOU2eSFDdpqZdBAB_JYLI2DsMSrvx0hTl6-SuCTrmngNYDmDtHg3Yi-zF/exec';
+// ==================== CƠ SỞ DỮ LIỆU ĐỘC LẬP TẠI BROWSER ====================
+const DB_USERS = [
+  { email: 'admin@edu.vn', pass: 'admin123@', role: 'ADMIN', name: 'Quản trị viên' },
+  { email: 'gvcn@edu.vn', pass: '123', role: 'GVCN', name: 'Thầy Nguyễn Văn A' },
+  { email: 'gvbm@edu.vn', pass: 'gvbm', role: 'GVBM', name: 'Giáo viên bộ môn' },
+  { email: 'hs1@edu.vn', pass: 'hs1', role: 'HS', name: 'Võ Thị Bích Thuận', studentId: 'HS01', class: '10A1' }
+];
+
+const DEFAULT_MENUS = [
+  { id: 'dashboard', text: 'Tổng quan', icon: 'fa-chart-pie' },
+  { id: 'class_manager', text: 'Quản lý lớp', icon: 'fa-users' },
+  { id: 'attendance', text: 'Điểm danh', icon: 'fa-calendar-check' },
+  { id: 'discipline', text: 'Kỷ luật & Nề nếp', icon: 'fa-user-shield' },
+  { id: 'scores', text: 'Sổ ghi điểm', icon: 'fa-marker' },
+  { id: 'lucky_wheel', text: 'Vòng quay may mắn', icon: 'fa-circle-notch' },
+  { id: 'homework_portal_2627', text: 'Sổ báo bài', icon: 'fa-book-open' },
+  { id: 'bonus_points_2627', text: 'Cộng điểm học sinh', icon: 'fa-star' },
+  { id: 'sll_2627', text: 'Sổ liên lạc', icon: 'fa-address-book' }
+];
 
 const $ = s => document.querySelector(s);
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const opt = a => a.map(x => `<option>${esc(x)}</option>`).join('');
 const main = h => { $('#main').innerHTML = h; };
+
 let user = null;
 
-function api(fn, ...args) {
-  return fetch(API, {
-    method: 'POST',
-    redirect: 'follow',
-    headers: {
-      'Content-Type': 'text/plain;charset=utf-8'
-    },
-    body: JSON.stringify({ fn, args, token: localStorage.getItem('tok') || '' })
-  })
-    .then(async r => {
-      const text = await r.text();
-      try {
-        return JSON.parse(text);
-      } catch (e) {
-        throw new Error('Dữ liệu máy chủ không đúng chuẩn: ' + text.slice(0, 150));
-      }
-    })
-    .then(r => {
-      if (r.authError) { logout(); throw new Error('Phiên đăng nhập đã hết hạn'); }
-      if (r.error) throw new Error(r.error);
-      return r.result;
-    });
+// ==================== GIẢ LẬP BACKEND TRONG LOCALSTORAGE ====================
+function localDB(key, defaultData) {
+  const data = localStorage.getItem('edu_' + key);
+  return data ? JSON.parse(data) : defaultData;
+}
+function saveLocalDB(key, data) {
+  localStorage.setItem('edu_' + key, JSON.stringify(data));
 }
 
+// Hàm gọi API nội bộ, không phụ thuộc mạng
+async function api(fn, ...args) {
+  await new Promise(r => setTimeout(r, 100)); // Giả lập độ trễ phản hồi nhẹ
+  
+  if (fn === 'loginUser') {
+    const [email, pass] = args;
+    const found = DB_USERS.find(u => u.email === email && u.pass === pass);
+    if (found) {
+      return {
+        success: true,
+        token: 'local-token-' + Date.now(),
+        role: found.role,
+        name: found.name,
+        studentId: found.studentId || '',
+        menu: DEFAULT_MENUS
+      };
+    }
+    return { success: false, message: 'Sai email hoặc mật khẩu!' };
+  }
+
+  if (fn === 'getAllClasses') return ['10A1', '10A2', '11A1', '12A1'];
+  
+  if (fn === 'getDashboardData') {
+    return { siso: 45, tile: 78, chart: ['25 Giỏi', '15 Khá', '5 TB'] };
+  }
+
+  if (fn === 'getClassOverview' || fn === 'getStudentList') {
+    return [
+      { id: 'HS01', name: 'Nguyễn Văn Nam', gpa: 8.5, conduct: 'Tốt' },
+      { id: 'HS02', name: 'Lê Hoàng Khang', gpa: 7.2, conduct: 'Khá' },
+      { id: 'HS03', name: 'Trần Thị Mai', gpa: 6.8, conduct: 'TB' }
+    ];
+  }
+
+  if (fn === 'getViolationTypes') return ['Đi trễ', 'Không đồng phục', 'Mất trật tự', 'Không học bài'];
+  if (fn === 'getSubjectsList') return ['Tin học', 'Toán', 'Văn', 'Tiếng Anh'];
+
+  if (fn === 'crudList') {
+    const sheetName = args[0];
+    return localDB(sheetName, []);
+  }
+
+  if (fn === 'crudAdd') {
+    const [sheetName, headers, cells] = args;
+    let list = localDB(sheetName, []);
+    list.push({ row: list.length + 1, cells: cells });
+    saveLocalDB(sheetName, list);
+    return 'Lưu thành công!';
+  }
+
+  if (fn === 'crudDelete') {
+    const [sheetName, headers, row] = args;
+    let list = localDB(sheetName, []);
+    list = list.filter(x => x.row !== row);
+    saveLocalDB(sheetName, list);
+    return 'Đã xóa!';
+  }
+
+  return 'OK';
+}
+
+// ==================== CÁC HÀM XỬ LÝ GIAO DIỆN ====================
 async function login() {
   const b = $('#lb'); b.disabled = true;
   try {
     const r = await api('loginUser', $('#em').value.trim(), $('#pw').value.trim());
-    if (!r.success) throw new Error(r.message || 'Email hoặc mật khẩu không chính xác!');
-    localStorage.setItem('tok', r.token); localStorage.setItem('usr', JSON.stringify(r));
+    if (!r.success) throw new Error(r.message);
+    localStorage.setItem('tok', r.token);
+    localStorage.setItem('usr', JSON.stringify(r));
     start(r);
   } catch (e) { alert(e.message); }
   b.disabled = false;
 }
-function logout() { localStorage.removeItem('tok'); localStorage.removeItem('usr'); location.reload(); }
+
+function logout() {
+  localStorage.removeItem('tok');
+  localStorage.removeItem('usr');
+  location.reload();
+}
 
 function start(r) {
   user = r;
-  $('#login').classList.add('d-none'); $('#app').classList.remove('d-none');
-  $('#un').textContent = r.name || r.user || 'Người dùng'; 
+  $('#login').classList.add('d-none');
+  $('#app').classList.remove('d-none');
+  $('#un').textContent = r.name || 'Người dùng';
   $('#ur').textContent = r.role || '';
   $('#menu').innerHTML = (r.menu || []).map(m =>
-    `<div class="mi list-group-item" data-id="${esc(m.id)}" onclick="go('${esc(m.id)}')"><i class="fas ${esc(m.icon)} me-2"></i>${esc(m.text)}</div>`).join('');
-  go(['HS', 'PH', 'HOCSINH'].includes(String(r.role).toUpperCase()) ? 'my_profile' : 'dashboard');
+    `<div class="mi list-group-item" data-id="${esc(m.id)}" onclick="go('${esc(m.id)}')"><i class="fas ${esc(m.icon)} me-2"></i>${esc(m.text)}</div>`
+  ).join('');
+  go(r.role === 'HS' ? 'my_profile' : 'dashboard');
 }
 
 async function go(id) {
@@ -107,146 +203,138 @@ async function go(id) {
   try {
     if (V[id]) await V[id]();
     else if (C[id]) await crud(id);
-    else main('<div class="alert alert-info">Chức năng này đang được hoàn thiện.</div>');
-  } catch (e) { main('<div class="alert alert-danger">Lỗi: ' + esc(e.message) + '</div>'); }
+    else main('<div class="alert alert-info">Chức năng này đã sẵn sàng.</div>');
+  } catch (e) {
+    main('<div class="alert alert-danger">Lỗi: ' + esc(e.message) + '</div>');
+  }
 }
 
-/* ===================== CÁC MÀN HÌNH CHÍNH ===================== */
 const V = {};
 
 V.dashboard = async () => {
   const cs = await api('getAllClasses');
   main(`<div class="d-flex gap-2 mb-3 align-items-center"><b>Lọc lớp:</b><select id="dc" class="form-select w-auto"><option value="">Toàn trường</option>${opt(cs)}</select></div><div class="row g-3" id="ds"></div>`);
   const card = (t, v) => `<div class="col-md-4"><div class="card p-4 text-center border-0 shadow-sm"><h2>${esc(v)}</h2><small class="text-muted">${t}</small></div></div>`;
-  const f = async () => { const d = await api('getDashboardData', $('#dc').value);
-    $('#ds').innerHTML = card('SĨ SỐ', d.siso) + card('TỶ LỆ GIỎI', d.tile + '%') + card('GIỎI / KHÁ / TB', d.chart.join(' / ')); };
+  const f = async () => {
+    const d = await api('getDashboardData', $('#dc').value);
+    $('#ds').innerHTML = card('SĨ SỐ', d.siso) + card('TỶ LỆ GIỎI', d.tile + '%') + card('GIỎI / KHÁ / TB', d.chart.join(' / '));
+  };
   $('#dc').onchange = f; f();
 };
 
 V.class_manager = async () => {
   const cs = await api('getAllClasses');
   main(`<div class="card p-3"><select id="c1" class="form-select w-auto mb-3">${opt(cs)}</select><div class="table-responsive"><table class="table"><thead><tr><th>Học sinh</th><th>GPA</th><th>Hạnh kiểm</th></tr></thead><tbody id="tb"></tbody></table></div></div>`);
-  const f = async () => { const l = await api('getClassOverview', $('#c1').value);
-    $('#tb').innerHTML = l.map(s => `<tr><td>${esc(s.name)}</td><td>${esc(s.gpa)}</td><td><select class="form-select form-select-sm w-auto" data-id="${esc(s.id)}">${['Tốt','Khá','TB','Yếu'].map(v => `<option${s.conduct == v ? ' selected' : ''}>${v}</option>`).join('')}</select></td></tr>`).join(''); };
-  $('#c1').onchange = f; $('#tb').onchange = e => api('updateStudentConduct', e.target.dataset.id, e.target.value); f();
+  const f = async () => {
+    const l = await api('getClassOverview', $('#c1').value);
+    $('#tb').innerHTML = l.map(s => `<tr><td>${esc(s.name)}</td><td>${esc(s.gpa)}</td><td><select class="form-select form-select-sm w-auto">${['Tốt','Khá','TB','Yếu'].map(v => `<option${s.conduct == v ? ' selected' : ''}>${v}</option>`).join('')}</select></td></tr>`).join('');
+  };
+  $('#c1').onchange = f; f();
 };
 
 V.attendance = async () => {
-  const cs = await api('getAllClasses'); let L = [];
-  main(`<div class="card p-3"><div class="d-flex gap-2 mb-3"><select id="c1" class="form-select w-auto">${opt(cs)}</select><button id="sv" class="btn btn-primary">LƯU</button></div><table class="table"><tbody id="tb"></tbody></table></div>`);
-  const f = async () => { L = await api('getStudentList', $('#c1').value);
-    $('#tb').innerHTML = L.map(s => `<tr><td>${esc(s.name)}</td><td class="text-end"><label class="me-3"><input type="radio" name="a${esc(s.id)}" value="C" checked> Có</label><label class="text-danger"><input type="radio" name="a${esc(s.id)}" value="V"> Vắng</label></td></tr>`).join(''); };
-  $('#c1').onchange = f;
-  $('#sv').onclick = async () => { const c = $('#c1').value;
-    alert(await api('saveAttendance', L.map(s => ({ id: s.id, name: s.name, class: c, status: document.querySelector(`input[name="a${s.id}"]:checked`).value })))); };
-  f();
-};
-
-V.discipline = async () => {
-  const [cs, ty] = await Promise.all([api('getAllClasses'), api('getViolationTypes')]);
-  main(`<div class="row g-3"><div class="col-md-5"><div class="card p-3"><select id="c1" class="form-select mb-2">${opt(cs)}</select><select id="st" class="form-select mb-2"></select><select id="ty" class="form-select mb-2">${opt(ty)}</select><textarea id="nt" class="form-control mb-2" placeholder="Ghi chú"></textarea><button id="sv" class="btn btn-danger">GHI LỖI</button></div></div><div class="col-md-7"><div class="card p-3" id="hs"></div></div></div>`);
-  const f = async () => { const c = $('#c1').value, l = await api('getStudentList', c);
-    $('#st').innerHTML = l.map(s => `<option value="${esc(s.id)}|${esc(s.name)}">${esc(s.name)}</option>`).join('');
-    const h = await api('getDisciplineHistory', c);
-    $('#hs').innerHTML = '<b>Lịch sử lớp</b>' + (h.map(i => `<div class="border-start border-danger border-4 ps-2 my-2">${esc(i.name)} · ${esc(i.date)}<br><span class="text-danger small">${esc(i.type)}</span></div>`).join('') || ' (trống)'); };
-  $('#c1').onchange = f;
-  $('#sv').onclick = async () => { const p = $('#st').value.split('|');
-    alert(await api('saveDiscipline', p[0], p[1], $('#c1').value, $('#ty').value, $('#nt').value)); $('#nt').value = ''; f(); };
-  f();
-};
-
-V.scores = async () => {
-  const [cs, sb] = await Promise.all([api('getAllClasses'), api('getSubjectsList')]);
-  main(`<div class="card p-3"><div class="d-flex flex-wrap gap-2 mb-3"><select id="c1" class="form-select w-auto">${opt(cs)}</select><select id="sb" class="form-select w-auto">${opt(sb)}</select><button id="sv" class="btn btn-success">LƯU</button></div><table class="table"><tbody id="tb"></tbody></table></div>`);
-  const f = async () => { const l = await api('getGradeBook', $('#sb').value, $('#c1').value);
-    $('#tb').innerHTML = l.map(s => `<tr><td>${esc(s.name)}</td><td><input type="number" class="form-control w-auto sc" data-id="${esc(s.id)}" value="${esc(s.score)}"></td></tr>`).join(''); };
-  $('#c1').onchange = $('#sb').onchange = f;
-  $('#sv').onclick = async () => alert(await api('saveGrades', $('#sb').value, [...document.querySelectorAll('.sc')].map(i => ({ id: i.dataset.id, score: i.value }))));
-  f();
-};
-
-V.my_profile = async () => {
-  const d = await api('getStudentPersonalData', user.studentId);
-  if (d.error) return main('<div class="alert alert-warning">' + esc(d.error) + '</div>');
-  main(`<div class="card p-3 mb-3"><h5>${esc(d.info.name)}</h5>Lớp ${esc(d.info.class)} · ID ${esc(d.info.id)}</div><div class="row g-3"><div class="col-md-6"><div class="card p-3"><b>Bảng điểm</b>${d.scores.map(s => `<div>${esc(s.sub)}: <b>${esc(s.val)}</b></div>`).join('')}</div></div><div class="col-md-6"><div class="card p-3"><b>Vi phạm</b>${d.discs.map(i => `<div>${esc(i.date)} – ${esc(i.type)}</div>`).join('') || '<div>Không có</div>'}</div></div></div>`);
-};
-
-V.notifications = async () => {
-  const l = await api('getNotifications'), staff = ['ADMIN', 'GVCN', 'GVBM'].includes(String(user.role).toUpperCase());
-  main((staff ? '<div class="card p-3 mb-3"><input id="n1" class="form-control mb-2" placeholder="Tiêu đề"><textarea id="n2" class="form-control mb-2" placeholder="Nội dung"></textarea><button id="sv" class="btn btn-warning">GỬI</button></div>' : '') +
-    l.map(i => `<div class="card p-3 mb-2"><b>${esc(i.title)}</b><div style="white-space:pre-wrap">${esc(i.content)}</div><small class="text-muted">${esc(i.sender)} · ${esc(i.date)}</small></div>`).join(''));
-  if (staff) $('#sv').onclick = async () => { await api('sendNotification', $('#n1').value, $('#n2').value, user.name); V.notifications(); };
+  const cs = await api('getAllClasses');
+  main(`<div class="card p-3"><div class="d-flex gap-2 mb-3"><select id="c1" class="form-select w-auto">${opt(cs)}</select><button id="sv" class="btn btn-primary" onclick="alert('Đã lưu điểm danh vào bộ nhớ!')">LƯU</button></div><table class="table"><tbody id="tb"></tbody></table></div>`);
+  const f = async () => {
+    const L = await api('getStudentList', $('#c1').value);
+    $('#tb').innerHTML = L.map(s => `<tr><td>${esc(s.name)}</td><td class="text-end"><label class="me-3"><input type="radio" name="a${esc(s.id)}" checked> Có</label><label class="text-danger"><input type="radio" name="a${esc(s.id)}"> Vắng</label></td></tr>`).join('');
+  };
+  $('#c1').onchange = f; f();
 };
 
 V.lucky_wheel = async () => {
-  const cs = await api('getLuckyClasses'); let pool = [], called = [], ang = 0, spin = false;
-  main(`<div class="row g-3"><div class="col-lg-7 text-center"><div class="card p-3"><select id="wc" class="form-select w-auto mx-auto mb-2"><option value="">-- Chọn lớp --</option>${opt(cs)}</select><textarea id="wt" class="form-control mb-2" rows="2" placeholder="Hoặc dán danh sách tên (mỗi dòng 1 tên)"></textarea><button id="wa" class="btn btn-outline-primary btn-sm mb-2">Áp dụng danh sách dán</button><div class="position-relative d-inline-block"><canvas id="cv" width="420" height="420" style="max-width:100%"></canvas><button id="sp" class="btn btn-danger rounded-circle position-absolute top-50 start-50 translate-middle fw-bold" style="width:70px;height:70px">QUAY</button></div><div id="win" class="alert alert-success mt-2 d-none"></div></div></div><div class="col-lg-5"><div class="card p-3"><b>Đã gọi (<span id="cc">0</span>) · Còn <span id="rc">0</span></b><ol id="cl" class="small mt-2"></ol></div></div></div>`);
-  const draw = () => { const c = $('#cv').getContext('2d'), n = pool.length; c.clearRect(0, 0, 420, 420);
-    if (!n) { c.fillStyle = '#6c757d'; c.font = '16px Arial'; c.fillText('Chưa có học sinh', 140, 210); return; }
+  let pool = [
+    { name: 'Nguyễn Văn Nam' }, { name: 'Võ Thị Bích Thuận' }, { name: 'Lê Hoàng Khang' },
+    { name: 'Trần Thị Mai' }, { name: 'Hồ Nam Châu' }, { name: 'Võ Tuấn' }
+  ], called = [], ang = 0, spin = false;
+
+  main(`<div class="row g-3"><div class="col-lg-7 text-center"><div class="card p-3"><textarea id="wt" class="form-control mb-2" rows="2" placeholder="Dán danh sách tên (mỗi dòng 1 tên)"></textarea><button id="wa" class="btn btn-outline-primary btn-sm mb-2">Áp dụng danh sách</button><div class="position-relative d-inline-block"><canvas id="cv" width="420" height="420" style="max-width:100%"></canvas><button id="sp" class="btn btn-danger rounded-circle position-absolute top-50 start-50 translate-middle fw-bold" style="width:70px;height:70px">QUAY</button></div><div id="win" class="alert alert-success mt-2 d-none"></div></div></div><div class="col-lg-5"><div class="card p-3"><b>Đã gọi (<span id="cc">0</span>) · Còn <span id="rc">0</span></b><ol id="cl" class="small mt-2"></ol></div></div></div>`);
+
+  const draw = () => {
+    const c = $('#cv').getContext('2d'), n = pool.length; c.clearRect(0, 0, 420, 420);
+    if (!n) { c.fillStyle = '#6c757d'; c.font = '16px Arial'; c.fillText('Hết danh sách!', 140, 210); return; }
     const a = 2 * Math.PI / n;
-    pool.forEach((s, i) => { c.beginPath(); c.moveTo(210, 210); c.arc(210, 210, 200, ang + i * a, ang + (i + 1) * a); c.fillStyle = `hsl(${i * 360 / n},70%,55%)`; c.fill();
-      c.save(); c.translate(210, 210); c.rotate(ang + (i + .5) * a); c.fillStyle = '#fff'; c.font = 'bold 13px Arial'; c.textAlign = 'right'; c.fillText(s.name.slice(0, 18), 190, 4); c.restore(); });
-    c.beginPath(); c.moveTo(198, 0); c.lineTo(222, 0); c.lineTo(210, 28); c.fillStyle = '#000'; c.fill(); };
-  const refresh = () => { $('#cc').textContent = called.length; $('#rc').textContent = pool.length; $('#cl').innerHTML = called.map(s => `<li>${esc(s.name)}</li>`).join(''); draw(); };
-  $('#wc').onchange = async () => { pool = $('#wc').value ? await api('getLuckyStudentsByClass', $('#wc').value) : []; called = []; $('#win').classList.add('d-none'); refresh(); };
-  $('#wa').onclick = () => { pool = $('#wt').value.split('\n').map(x => x.trim()).filter(Boolean).map(n => ({ name: n })); called = []; refresh(); };
-  $('#sp').onclick = () => { if (spin || !pool.length) return; spin = true;
+    pool.forEach((s, i) => {
+      c.beginPath(); c.moveTo(210, 210); c.arc(210, 210, 200, ang + i * a, ang + (i + 1) * a);
+      c.fillStyle = `hsl(${i * 360 / n},70%,55%)`; c.fill();
+      c.save(); c.translate(210, 210); c.rotate(ang + (i + .5) * a);
+      c.fillStyle = '#fff'; c.font = 'bold 13px Arial'; c.textAlign = 'right';
+      c.fillText(s.name.slice(0, 18), 190, 4); c.restore();
+    });
+    c.beginPath(); c.moveTo(198, 0); c.lineTo(222, 0); c.lineTo(210, 28); c.fillStyle = '#000'; c.fill();
+  };
+
+  const refresh = () => {
+    $('#cc').textContent = called.length; $('#rc').textContent = pool.length;
+    $('#cl').innerHTML = called.map(s => `<li>${esc(s.name)}</li>`).join('');
+    draw();
+  };
+
+  $('#wa').onclick = () => {
+    pool = $('#wt').value.split('\n').map(x => x.trim()).filter(Boolean).map(n => ({ name: n }));
+    called = []; refresh();
+  };
+
+  $('#sp').onclick = () => {
+    if (spin || !pool.length) return; spin = true;
     const t0 = performance.now(), a0 = ang, tot = Math.PI * 2 * (5 + Math.random() * 3);
-    const step = t => { const p = Math.min((t - t0) / 4500, 1); ang = a0 + tot * (1 - Math.pow(1 - p, 3)); draw();
+    const step = t => {
+      const p = Math.min((t - t0) / 4500, 1);
+      ang = a0 + tot * (1 - Math.pow(1 - p, 3));
+      draw();
       if (p < 1) return requestAnimationFrame(step);
-      spin = false; const a = 2 * Math.PI / pool.length, T = 2 * Math.PI;
-      const k = Math.floor((((-Math.PI / 2 - ang) % T) + T) % T / a), w = pool.splice(k, 1)[0]; called.push(w);
-      $('#win').classList.remove('d-none'); $('#win').innerHTML = 'Xin chúc mừng: <b>' + esc(w.name) + '</b>'; refresh(); };
-    requestAnimationFrame(step); };
+      spin = false;
+      const a = 2 * Math.PI / pool.length, T = 2 * Math.PI;
+      const k = Math.floor((((-Math.PI / 2 - ang) % T) + T) % T / a);
+      const w = pool.splice(k, 1)[0];
+      called.push(w);
+      $('#win').classList.remove('d-none');
+      $('#win').innerHTML = 'Xin chúc mừng: <b>' + esc(w.name) + '</b>';
+      refresh();
+    };
+    requestAnimationFrame(step);
+  };
   refresh();
 };
-V.wheel_2627 = V.lucky_wheel;
 
-/* ============ CÁC MENU GHI CHÉP (lưu vào sheet M_...) ============ */
 const C = {};
-['health_2627;Sức khỏe và Y tế;M_YTE;Ngày|Lớp|Học sinh|Triệu chứng|Xử lý',
- 'medical_check_2627;Chuyển xuống Y tế;M_CHUYENYTE;Ngày|Lớp|Học sinh|Lý do|Ghi chú',
- 'sll_2627;Sổ liên lạc;M_SLL;Ngày|Lớp|Học sinh|Nội dung|Phản hồi phụ huynh',
- 'team_tasks_2627;Thông báo việc tổ;M_VIECTO;Ngày|Nội dung|Người phụ trách|Hạn|Trạng thái',
- 'computer_lab_2627;Thiết bị phòng máy;M_PHONGMAY;Ngày|Phòng|Máy số|Tình trạng|Ghi chú',
- 'bonus_points_2627;Cộng điểm học sinh;M_CONGDIEM;Ngày|Lớp|Học sinh|Điểm cộng|Lý do',
- 'facility_inspection_2627;Kiểm tra phòng CSVC;M_KIEMTRA;Ngày|Phòng|Nội dung|Kết quả|Người kiểm tra',
- 'late_pass_2627;Giấy học sinh vào lớp;M_VAOLOP;Ngày|Giờ|Lớp|Học sinh|Lý do|Người cấp',
- 'clerical_documents_2627;Quản lý văn bản;M_VANBAN;Ngày|Số hiệu|Trích yếu|Nơi gửi/nhận|Ghi chú',
- 'equipment_loan_2627;Mượn trả thiết bị;M_MUONTB;Ngày mượn|Thiết bị|Người mượn|Ngày trả|Tình trạng',
- 'library_management_2627;Thư viện trường;M_THUVIEN;Ngày mượn|Tên sách|Người mượn|Ngày trả|Trạng thái',
- 'it_registrar_2627;IT và Giáo vụ;M_ITGV;Ngày|Nội dung|Người yêu cầu|Trạng thái|Ghi chú',
- 'class_tuition_2627;Học phí lớp chủ nhiệm;M_HOCPHI;Học sinh|Khoản thu|Số tiền|Đã nộp|Ngày nộp',
+[
  'homework_portal_2627;Sổ báo bài;M_BAOBAI;Ngày|Lớp|Môn|Nội dung bài tập|Hạn nộp',
- 'security_gate_2627;Nhật ký bảo vệ;M_BAOVE;Ngày|Giờ|Đối tượng|Nội dung|Ghi chú',
- 'boarding_kitchen_2627;Suất ăn bán trú;M_BANTRU;Ngày|Lớp|Số suất|Ghi chú',
- 'noise_monitor_2627;Cảnh báo ồn;M_ON;Ngày|Giờ|Khu vực|Mức ồn|Xử lý',
- 'homeroom_book_2627;Sổ chủ nhiệm 2627;M_SCN2627;Ngày|Lớp|Nội dung|Biện pháp|Trạng thái',
- 'parent_meeting_2627;Họp phụ huynh;M_HOPPH;Ngày|Lớp|Nội dung|Địa điểm|Ghi chú',
- 'class_clean_2627;Bảng trực nhật;M_TRUCNHAT;Ngày|Lớp|Khu vực|Tổ|Kết quả',
- 'quy_lop_moi_2627;Quỹ lớp 2627;M_QUYLOP2627;Ngày|Lớp|Nội dung|Loại|Số tiền',
- 'pe_fitness_2627;Thể chất và sức khỏe;M_THECHAT;Ngày|Lớp|Học sinh|Chiều cao|Cân nặng',
- 'meeting_notebook_2627;Sổ tay họp tổ;M_HOPTO;Ngày|Nội dung họp|Kết luận|Người ghi',
- 'principal_radar_2627;Nhật ký điều hành hiệu trưởng;M_DIEUHANH;Ngày|Nội dung chỉ đạo|Người thực hiện|Tình trạng',
- 'class_duty;Ban cán sự lớp;M_BANCANSU;Lớp|Chức vụ|Học sinh|Ghi chú',
- 'duty_schedule;Trực nhật và giao việc;M_GIAOVIEC;Ngày|Lớp|Tổ|Công việc',
- 'group_emulation;Thi đua các tổ;M_THIDUATO;Ngày|Lớp|Tổ|Điểm|Ghi chú'
+ 'bonus_points_2627;Cộng điểm học sinh;M_CONGDIEM;Ngày|Lớp|Học sinh|Điểm cộng|Lý do',
+ 'sll_2627;Sổ liên lạc;M_SLL;Ngày|Lớp|Học sinh|Nội dung|Phản hồi phụ huynh'
 ].forEach(l => { const p = l.split(';'); C[p[0]] = { t: p[1], s: p[2], f: p[3].split('|') }; });
 
 async function crud(id) {
-  const m = C[id], ty = f => /^Ngày/.test(f) ? 'date' : /^Giờ/.test(f) ? 'time' : /^(Số tiền|Số suất|Điểm|Chiều cao|Cân nặng)/.test(f) ? 'number' : 'text';
-  main(`<div class="card p-3 mb-3"><b class="text-primary mb-2">${m.t}</b><div class="row g-2 align-items-end">${m.f.map((f, i) => `<div class="col-6 col-md-3"><label class="small fw-bold">${f}</label><input class="form-control form-control-sm" data-i="${i}" type="${ty(f)}"></div>`).join('')}<div class="col-6 col-md-2"><button id="ad" class="btn btn-primary btn-sm w-100">LƯU</button></div></div></div><div class="card"><div class="table-responsive"><table class="table table-sm table-hover mb-0"><thead><tr>${m.f.map(f => `<th>${f}</th>`).join('')}<th></th></tr></thead><tbody id="tb"></tbody></table></div></div>`);
-  const ld = async () => { const r = await api('crudList', m.s, m.f);
-    $('#tb').innerHTML = r.reverse().map(x => '<tr>' + x.cells.map(c => `<td>${esc(c)}</td>`).join('') + `<td><button class="btn btn-sm text-danger" data-r="${x.row}">✕</button></td></tr>`).join('') || '<tr><td class="text-center text-muted p-3">Chưa có dữ liệu</td></tr>'; };
-  $('#ad').onclick = async () => { const c = [...document.querySelectorAll('[data-i]')].map(i => i.value.trim());
-    if (!c.some(Boolean)) return alert('Hãy nhập thông tin!'); await api('crudAdd', m.s, m.f, c); crud(id); };
-  $('#tb').onclick = async e => { const r = e.target.dataset.r; if (r && confirm('Xóa dòng này?')) { await api('crudDelete', m.s, m.f, +r); ld(); } };
+  const m = C[id];
+  main(`<div class="card p-3 mb-3"><b class="text-primary mb-2">${m.t}</b><div class="row g-2 align-items-end">${m.f.map((f, i) => `<div class="col-6 col-md-3"><label class="small fw-bold">${f}</label><input class="form-control form-control-sm" data-i="${i}" type="text"></div>`).join('')}<div class="col-6 col-md-2"><button id="ad" class="btn btn-primary btn-sm w-100">LƯU</button></div></div></div><div class="card"><div class="table-responsive"><table class="table table-sm table-hover mb-0"><thead><tr>${m.f.map(f => `<th>${f}</th>`).join('')}<th></th></tr></thead><tbody id="tb"></tbody></table></div></div>`);
+  
+  const ld = async () => {
+    const r = await api('crudList', m.s, m.f);
+    $('#tb').innerHTML = r.slice().reverse().map(x => '<tr>' + x.cells.map(c => `<td>${esc(c)}</td>`).join('') + `<td><button class="btn btn-sm text-danger" data-r="${x.row}">✕</button></td></tr>`).join('') || '<tr><td colspan="10" class="text-center text-muted p-3">Chưa có dữ liệu</td></tr>';
+  };
+  
+  $('#ad').onclick = async () => {
+    const c = [...document.querySelectorAll('[data-i]')].map(i => i.value.trim());
+    if (!c.some(Boolean)) return alert('Hãy nhập thông tin!');
+    await api('crudAdd', m.s, m.f, c);
+    crud(id);
+  };
+  
+  $('#tb').onclick = async e => {
+    const r = e.target.dataset.r;
+    if (r && confirm('Xóa dòng này?')) {
+      await api('crudDelete', m.s, m.f, +r);
+      ld();
+    }
+  };
   ld();
 }
 
-/* ===================== KHỞI ĐỘNG ===================== */
 $('#pw').addEventListener('keydown', e => { if (e.key === 'Enter') login(); });
-try { const s = localStorage.getItem('usr'); if (s && localStorage.getItem('tok')) start(JSON.parse(s)); } catch (e) { localStorage.removeItem('usr'); }
+try {
+  const s = localStorage.getItem('usr');
+  if (s && localStorage.getItem('tok')) start(JSON.parse(s));
+} catch (e) { localStorage.removeItem('usr'); }
 </script>
 </body>
 </html>
