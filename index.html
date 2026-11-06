@@ -7,6 +7,10 @@
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!-- Thư viện xem & vẽ PDF -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<!-- Thư viện nhúng mực đỏ & xuất file PDF mới -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
 <style>
 body{background:#f0f2f5;font-family:'Segoe UI',Tahoma,sans-serif}
 .mi{cursor:pointer;border:none;border-radius:10px!important;margin-bottom:2px;padding:8px 14px;font-size:14px}
@@ -176,6 +180,7 @@ global_violations_today|Vi phạm toàn trường|exclamation-triangle|C|rep:tod
 violation_summary_today|Nề nếp tổng hợp ngày|list-ol|C|rep:sum
 violation_search_adv|Tra cứu vi phạm theo HS|search-plus|C|rep:all
 quiz_gemini|Soạn đề trắc nghiệm AI|robot|G|quiz
+pdf_grade|Chấm bài tự luận PDF|marker|G|pdfGrade
 my_profile|Hồ sơ học tập|user-graduate|S|profile
 class_fund|Quỹ Lớp|wallet|M|crud:fund`.split('\n').map(l=>{const[id,t,i,a,h]=l.split('|');return{id,t,i,a,h}});
 
@@ -341,7 +346,45 @@ tug(){TUG=0;C(`<div class="${card} text-center"><h6>Đội xanh kéo về phải
 word(){C(`<div class="${card} text-center"><div id="wset" class="d-flex gap-2 justify-content-center"><input id="ww" type="password" class="form-control form-control-sm w-auto" placeholder="Từ khóa (GV nhập)"><input id="wh" class="form-control form-control-sm w-auto" placeholder="Gợi ý"><button class="btn btn-primary btn-sm" onclick="wstart()">BẮT ĐẦU</button></div><div id="wh2" class="text-muted my-2"></div><div id="wd" class="big" style="letter-spacing:8px"></div><div id="wk"></div><div id="wl" class="fw-bold"></div></div>`)},
 launcher(){C(`<div class="row g-2">${MY.map(m=>`<div class="col-6 col-md-3 col-lg-2"><div class="card h-100 border-0 shadow-sm text-center p-3" style="cursor:pointer" onclick="go('${m.id}')"><i class="fas fa-${m.i} fa-2x text-primary mb-2"></i><small class="fw-bold">${esc(m.t)}</small></div></div>`).join('')}</div>`)},
 overview(){const t=today();C(`<div class="row g-3 text-center">${[['Học sinh',D('students').length],['Số lớp',classes().length],['Vi phạm hôm nay',D('discipline').filter(d=>d.date.slice(0,10)==t).length],['Vắng hôm nay',D('attendance').filter(a=>a.date.slice(0,10)==t&&a.status=='V').length],['Tài khoản',D('users').length],['Giao dịch quỹ',D('fund').length]].map(x=>`<div class="col-6 col-md-4"><div class="${card}"><h2>${x[1]}</h2><small>${x[0]}</small></div></div>`).join('')}</div>`)},
-profile(){const id=USER.sid||'';C(`<div class="${card}"><input id="pid" class="form-control form-control-sm w-auto d-inline" placeholder="Mã HS" value="${esc(id)}"><button class="btn btn-primary btn-sm ms-1" onclick="drawProfile()">XEM</button></div><div id="pf"></div>`);if(id)drawProfile()}
+profile(){const id=USER.sid||'';C(`<div class="${card}"><input id="pid" class="form-control form-control-sm w-auto d-inline" placeholder="Mã HS" value="${esc(id)}"><button class="btn btn-primary btn-sm ms-1" onclick="drawProfile()">XEM</button></div><div id="pf"></div>`);if(id)drawProfile()},
+
+/* Chức năng Chấm bài tự luận trên PDF */
+pdfGrade(){
+  C(`
+    <div class="${card}">
+      <div class="row g-2 align-items-center mb-2">
+        <div class="col-md-4 col-12">
+          <label class="small fw-bold text-primary"><i class="fas fa-file-pdf me-1"></i>Chọn file PDF bài làm học sinh:</label>
+          <input type="file" id="pdfFileInput" accept="application/pdf" class="form-control form-control-sm" onchange="loadPdfFile(event)">
+        </div>
+        <div class="col-md-8 col-12 d-flex flex-wrap gap-2 align-items-end justify-content-md-end mt-2 mt-md-0">
+          <div class="btn-group btn-group-sm">
+            <button class="btn btn-outline-danger active" id="btnToolDraw" onclick="setPdfTool('draw')"><i class="fas fa-pen"></i> Bút đỏ</button>
+            <button class="btn btn-outline-danger" id="btnToolText" onclick="setPdfTool('text')"><i class="fas fa-font"></i> Chữ đỏ</button>
+            <button class="btn btn-outline-secondary" onclick="addPdfQuickStamp('✔ ĐÚNG')">✔ Đúng</button>
+            <button class="btn btn-outline-secondary" onclick="addPdfQuickStamp('✘ SAI')">✘ Sai</button>
+          </div>
+          <button class="btn btn-sm btn-outline-secondary" onclick="clearPdfAnnotations()"><i class="fas fa-undo"></i> Xóa nét trang này</button>
+          <div class="btn-group btn-group-sm">
+            <button class="btn btn-light border" onclick="changePdfPage(-1)"><i class="fas fa-chevron-left"></i></button>
+            <span class="btn btn-light border disabled fw-bold" id="pdfPageIndicator">0 / 0</span>
+            <button class="btn btn-light border" onclick="changePdfPage(1)"><i class="fas fa-chevron-right"></i></button>
+          </div>
+          <button class="btn btn-sm btn-success px-3 fw-bold" onclick="exportGradedPdf()"><i class="fas fa-file-export me-1"></i> Xuất PDF đã chấm</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card border-0 shadow-sm p-3 text-center bg-light position-relative" style="min-height:500px; overflow:auto;">
+      <div id="pdfCanvasWrapper" style="position:relative; display:inline-block; margin:0 auto; box-shadow:0 4px 10px rgba(0,0,0,0.15); background:#fff;">
+        <canvas id="pdfRenderCanvas"></canvas>
+        <canvas id="pdfDrawCanvas" style="position:absolute; top:0; left:0; cursor:crosshair;"></canvas>
+      </div>
+      <div id="pdfLoadingNotice" class="text-muted mt-5">Vui lòng bấm chọn file PDF bài làm học sinh ở trên để bắt đầu chấm.</div>
+    </div>
+  `);
+  initPdfGradingModule();
+}
 };
 
 function drawDash(){
@@ -378,7 +421,7 @@ function drawGrid(){
 
 function drawCvm(){
   const c=$('vc').value,s=$('vs').value,e=$('ve').value,L=D('loi');if(!c)return alert('Chọn lớp!');
-  $('vt').innerHTML=`<thead><tr><th>HỌC SINH</th>${L.map(x=>`<th title="${esc(x.name)}">${esc(x.code)}</th>`).join('')}<th>ĐIỂM TRỪ</th></tr></thead><tbody>${stOf(c).map(st=>{let p=0;const cells=L.map(x=>{const n=D('discipline').filter(d=>d.id==st.id&&d.type==x.name&&inR(d,s,e)).length;p+=n*x.pts;return`<td>${n||''}</td>`}).join('');return`<tr><td class="fw-bold">${esc(st.name)}</td>${cells}<td class="text-danger fw-bold">${p}</td></tr>`}).join('')}</tbody>`;
+  $('vt').innerHTML=`<thead><tr><th>HỌC SINH</th>${L.map(x=>`<th title="${esc(x.name)}">${esc(x.code)}</th>`).join('')}<th>ĐIỂM TRỪ</th></tr></thead><tbody>${stOf(c).map(st=>{let p=0;const cells=L.map(x=> ancient=d=>d.id==st.id&&d.type==x.name&&inR(d,s,e),n=D('discipline').filter(ancient).length;p+=n*x.pts;return`<td>${n||''}</td>`}).join('');return`<tr><td class="fw-bold">${esc(st.name)}</td>${cells}<td class="text-danger fw-bold">${p}</td></tr>`}).join('')}</tbody>`;
 }
 
 function drawAttStat(){
@@ -552,6 +595,223 @@ function printQuiz(ans){
   w.document.write(`<meta charset="UTF-8"><body style="font-family:'Times New Roman',serif;margin:30px;line-height:1.5"><h2 style="text-align:center">ĐỀ KIỂM TRA TRẮC NGHIỆM<br><small>${esc(t)}</small></h2><p>Họ và tên: ....................................... Lớp: ........</p>
   ${QZ.map((x,i)=>`<div style="margin-bottom:10px;page-break-inside:avoid"><b>Câu ${i+1}.</b> ${esc(x.q)}<br>${x.o.map((o,j)=>`<span style="display:inline-block;width:48%"><b>${'ABCD'[j]}.</b> ${esc(o)}</span>`).join('')}</div>`).join('')}
   ${ans?`<hr><h3>ĐÁP ÁN</h3><p>${QZ.map((x,i)=>`${i+1}-${'ABCD'[x.a]}`).join(' &nbsp; ')}</p>${QZ.map((x,i)=>x.e?`<p style="font-size:13px"><b>Câu ${i+1}:</b> ${esc(x.e)}</p>`:'').join('')}`:''}<script>print()<\/script>`);
+}
+
+/* ===== XỬ LÝ CHẤM BÀI TỰ LUẬN TRÊN FILE PDF ===== */
+let pdfDocRaw = null;
+let pdfJsDoc = null;
+let currentPdfPage = 1;
+let totalPdfPages = 0;
+let pdfScale = 1.3;
+let pdfTool = 'draw';
+let isPdfPainting = false;
+let pageAnnotations = {};
+
+function initPdfGradingModule() {
+  if (window.pdfjsLib) {
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  }
+}
+
+async function loadPdfFile(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = async function() {
+    pdfDocRaw = new Uint8Array(this.result);
+    pdfJsDoc = await pdfjsLib.getDocument({ data: pdfDocRaw.slice() }).promise;
+    totalPdfPages = pdfJsDoc.numPages;
+    currentPdfPage = 1;
+    pageAnnotations = {};
+    if($('pdfLoadingNotice')) $('pdfLoadingNotice').classList.add('d-none');
+    renderCurrentPdfPage();
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+async function renderCurrentPdfPage() {
+  if (!pdfJsDoc) return;
+  $('pdfPageIndicator').innerText = `${currentPdfPage} / ${totalPdfPages}`;
+
+  const page = await pdfJsDoc.getPage(currentPdfPage);
+  const viewport = page.getViewport({ scale: pdfScale });
+
+  const renderCanvas = $('pdfRenderCanvas');
+  const drawCanvas = $('pdfDrawCanvas');
+
+  renderCanvas.width = viewport.width;
+  renderCanvas.height = viewport.height;
+  drawCanvas.width = viewport.width;
+  drawCanvas.height = viewport.height;
+
+  const renderCtx = renderCanvas.getContext('2d');
+  await page.render({ canvasContext: renderCtx, viewport: viewport }).promise;
+
+  setupDrawCanvas(drawCanvas);
+  restorePageAnnotations(currentPdfPage);
+}
+
+function setupDrawCanvas(canvas) {
+  const ctx = canvas.getContext('2d');
+  ctx.strokeStyle = '#e53e3e';
+  ctx.lineWidth = 3;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+
+  canvas.onmousedown = (e) => {
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    if (pdfTool === 'draw') {
+      isPdfPainting = true;
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      saveAction(currentPdfPage, { type: 'pathStart', x, y });
+    } else if (pdfTool === 'text') {
+      const text = prompt('Nhập nhận xét / ghi chú bằng bút đỏ:');
+      if (text) {
+        drawTextOnCanvas(ctx, text, x, y);
+        saveAction(currentPdfPage, { type: 'text', text, x, y });
+      }
+    }
+  };
+
+  canvas.onmousemove = (e) => {
+    if (!isPdfPainting || pdfTool !== 'draw') return;
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    ctx.lineTo(x, y);
+    ctx.stroke();
+    saveAction(currentPdfPage, { type: 'pathPoint', x, y });
+  };
+
+  canvas.onmouseup = () => {
+    if (isPdfPainting) {
+      isPdfPainting = false;
+      saveAction(currentPdfPage, { type: 'pathEnd' });
+    }
+  };
+}
+
+function drawTextOnCanvas(ctx, text, x, y) {
+  ctx.font = 'bold 16px "Segoe UI", Tahoma, sans-serif';
+  ctx.fillStyle = '#e53e3e';
+  ctx.fillText(text, x, y);
+}
+
+function saveAction(pageNum, action) {
+  if (!pageAnnotations[pageNum]) pageAnnotations[pageNum] = [];
+  pageAnnotations[pageNum].push(action);
+}
+
+function restorePageAnnotations(pageNum) {
+  const actions = pageAnnotations[pageNum] || [];
+  const canvas = $('pdfDrawCanvas');
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.strokeStyle = '#e53e3e';
+  ctx.lineWidth = 3;
+  ctx.lineCap = 'round';
+
+  actions.forEach(act => {
+    if (act.type === 'pathStart') {
+      ctx.beginPath();
+      ctx.moveTo(act.x, act.y);
+    } else if (act.type === 'pathPoint') {
+      ctx.lineTo(act.x, act.y);
+      ctx.stroke();
+    } else if (act.type === 'text') {
+      drawTextOnCanvas(ctx, act.text, act.x, act.y);
+    }
+  });
+}
+
+function setPdfTool(tool) {
+  pdfTool = tool;
+  $('btnToolDraw').classList.toggle('active', tool === 'draw');
+  $('btnToolText').classList.toggle('active', tool === 'text');
+}
+
+function addPdfQuickStamp(stampText) {
+  if (!pdfJsDoc) return alert('Hãy tải file PDF trước!');
+  const canvas = $('pdfDrawCanvas');
+  const ctx = canvas.getContext('2d');
+  const x = 50, y = 50;
+  drawTextOnCanvas(ctx, stampText, x, y);
+  saveAction(currentPdfPage, { type: 'text', text: stampText, x, y });
+}
+
+function clearPdfAnnotations() {
+  if (confirm('Xóa toàn bộ nhận xét và nét vẽ trang này?')) {
+    pageAnnotations[currentPdfPage] = [];
+    const canvas = $('pdfDrawCanvas');
+    canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+  }
+}
+
+async function changePdfPage(delta) {
+  const next = currentPdfPage + delta;
+  if (next >= 1 && next <= totalPdfPages) {
+    currentPdfPage = next;
+    await renderCurrentPdfPage();
+  }
+}
+
+async function exportGradedPdf() {
+  if (!pdfDocRaw) return alert('Chưa có file PDF nào được chọn!');
+
+  const { PDFDocument } = PDFLib;
+  const pdfDoc = await PDFDocument.load(pdfDocRaw);
+  const totalPages = pdfDoc.getPageCount();
+
+  for (let i = 1; i <= totalPages; i++) {
+    const actions = pageAnnotations[i];
+    if (actions && actions.length > 0) {
+      const tempCanvas = document.createElement('canvas');
+      const targetPage = pdfDoc.getPage(i - 1);
+      const { width, height } = targetPage.getSize();
+
+      tempCanvas.width = width * 1.5;
+      tempCanvas.height = height * 1.5;
+      const ctx = tempCanvas.getContext('2d');
+      const ratio = tempCanvas.width / $('pdfDrawCanvas').width;
+
+      ctx.scale(ratio, ratio);
+      ctx.strokeStyle = '#e53e3e';
+      ctx.lineWidth = 3;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+
+      actions.forEach(act => {
+        if (act.type === 'pathStart') {
+          ctx.beginPath();
+          ctx.moveTo(act.x, act.y);
+        } else if (act.type === 'pathPoint') {
+          ctx.lineTo(act.x, act.y);
+          ctx.stroke();
+        } else if (act.type === 'text') {
+          drawTextOnCanvas(ctx, act.text, act.x, act.y);
+        }
+      });
+
+      const pngUrl = tempCanvas.toDataURL('image/png');
+      const pngImageBytes = await fetch(pngUrl).then(res => res.arrayBuffer());
+      const pngImage = await pdfDoc.embedPng(pngImageBytes);
+
+      targetPage.drawImage(pngImage, {
+        x: 0,
+        y: 0,
+        width: width,
+        height: height,
+      });
+    }
+  }
+
+  const pdfBytes = await pdfDoc.save();
+  dl('Bai_Lam_Da_Cham.pdf', pdfBytes, 'application/pdf');
 }
 
 /* ===== BÁO CÁO VI PHẠM ===== */
